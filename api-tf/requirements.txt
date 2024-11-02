@@ -6,3 +6,5 @@ transformers
 datasets
 tokenizers
 scipy
+FlagEmbedding
+python-dotenv

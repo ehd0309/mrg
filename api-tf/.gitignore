@@ -2,3 +2,6 @@
 .ipynb_**
 .idea
 .Trash-**
+.venv
+.env
+__pycache__
