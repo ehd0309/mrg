@@ -1,7 +1,30 @@
 version: '3.8'
 
 services:
-# OCR API
+  # OLLAMA API
+  ollama-api:
+    container_name: pds-ollama
+    build:
+      context: ./api-ollama
+      dockerfile: Dockerfile
+    image: pds-ollama:latest
+    ports:
+      - "10669:11434"
+    environment:
+      - OLLAMA_KEEP_ALIVE=1m
+    volumes:
+      - ./api_ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [ "1" ]
+              capabilities: [ "gpu" ]
+    networks:
+      - park
+
+  # OCR API
   ocr-api:
     container_name: pds-ocr
     image: pds-ocr:latest
@@ -20,8 +43,8 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ["1"]
-              capabilities: [gpu]
+              device_ids: [ "1" ]
+              capabilities: [ gpu ]
     networks:
       - park
 networks:
