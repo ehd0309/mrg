@@ -10,8 +10,8 @@ import pymupdf4llm
 
 from surya.schema import OCRResult
 
-INPUT_PATH = Path(__file__).parent.parent.parent.resolve() / 'assets/inputs'
-OUTPUT_PATH = Path(__file__).parent.parent.parent.resolve() / 'assets/outputs'
+INPUT_PATH = Path(__file__).parent.parent.resolve() / 'assets/inputs'
+OUTPUT_PATH = Path(__file__).parent.parent.resolve() / 'assets/outputs'
 FONT_PATH = Path(__file__).parent.parent.resolve() / 'public/batang_m.ttf'
 EXTENSIONS = ['.pdf', '.jpg', '.png']
 

@@ -14,7 +14,7 @@ services:
     ports:
       - "10671:5000"
     volumes:
-      - ./assets:/app/assets
+      - ./api-ocr/assets:/app/assets
     deploy:
       resources:
         reservations:
