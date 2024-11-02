@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MODEL_LIST=('qwen/qwen-14b-fp16' 'yanolja/eeve-10.8b-fp16')
+MODEL_LIST=('qwen/qwen-7b-fp16' 'qwen/qwen-14b-fp16' 'yanolja/eeve-10.8b-fp16')
 
 chmod +x -R /root/.ollama/presets/
 
