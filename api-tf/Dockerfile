@@ -10,10 +10,10 @@ RUN apt-get update && apt-get install -y \
     git
 
 
+WORKDIR /app
 
 FROM base AS jupyter-runner
 COPY . .
-WORKDIR /workspace
 
 RUN pip install -r requirements.txt
 RUN pip install jupyter jupyterlab
@@ -30,7 +30,6 @@ CMD ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root", "--no-browser"]
 
 FROM base AS flask-runner
 COPY . .
-WORKDIR /app
 
 RUN pip install -r requirements.txt
 RUN pip install flask flask-cors gunicorn

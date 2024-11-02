@@ -73,7 +73,7 @@ services:
     ports:
       - "10672:8888"
     volumes:
-      - ./api-tf/workspace:/workspace
+      - ./api-tf/workspace:/app/workspace
       - ./api-tf/.hf-cache:/usr/.hf-cache
     networks:
       - park
