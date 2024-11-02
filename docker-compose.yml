@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+# OCR API
+  ocr-api:
+    container_name: pds-ocr
+    image: pds-ocr:latest
+    build:
+      context: ./api-ocr
+      dockerfile: Dockerfile
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=1
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    ports:
+      - "10671:5000"
+    volumes:
+      - ./assets:/app/assets
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["1"]
+              capabilities: [gpu]
+    networks:
+      - park
+networks:
+  park:
+    external: true
