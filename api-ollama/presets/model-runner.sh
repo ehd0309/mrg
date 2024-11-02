@@ -2,6 +2,8 @@
 
 MODEL_LIST=('qwen/qwen-14b-fp16' 'yanolja/eeve-10.8b-fp16')
 
+chmod +x -R /root/.ollama/presets/
+
 for model in "${MODEL_LIST[@]}"
 do
   if [ "$(ollama list $model | wc -l)" -gt 1 ]; then
