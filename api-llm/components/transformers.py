@@ -11,11 +11,11 @@ def convert_di_documents(docs: List[Document]) -> List[Document]:
     api_path = EnvFinder().get_transformers_url() + '/api/token/de-identify'
     response = requests.post(
         api_path,
-        json={"sentence": page_contents}
+        json={"sentences": page_contents}
     )
     if response.status_code != 200:
         raise ValueError(f"Request failed: {response.status_code}, {response.text}")
-    di_page_contents = response.json()
+    di_page_contents = response.json()['sentences']
     di_docs = [
         Document(page_content=di_content, metadata=doc.metadata)
         for doc, di_content in zip(docs, di_page_contents)
@@ -28,9 +28,9 @@ def extract_keywords(docs: List[Document]) -> List[str]:
     api_path = EnvFinder().get_transformers_url() + '/api/token/keywords'
     response = requests.post(
         api_path,
-        json={"sentence": page_contents}
+        json={"sentences": page_contents}
     )
     if response.status_code != 200:
         raise ValueError(f"Request failed: {response.status_code}, {response.text}")
     extracted_keywords = response.json()
-    return extracted_keywords
+    return extracted_keywords['sentences']

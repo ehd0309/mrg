@@ -1,8 +1,8 @@
 from chains.graph_state import AdvancedDocumentPreprocessorState
-from components import OCRResolver, VectorDatabase, TransformersDenseEmbeddings, Prompt, LLM, convert_di_documents, \
-    extract_keywords
+from components import OCRResolver, VectorDatabase, TransformersDenseEmbeddings, TransformersSparseEmbeddings, Prompt, \
+    LLM, convert_di_documents, extract_keywords
 from langchain_community.document_loaders import UnstructuredMarkdownLoader
-from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
+from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.documents import Document
 from langchain_experimental.text_splitter import SemanticChunker
@@ -13,8 +13,8 @@ def ocr_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPrepro
     ocr_resolver = OCRResolver()
     result_md_paths = ocr_resolver.gen_md_from_pdf_v2(index_name=index_name)
     return AdvancedDocumentPreprocessorState(
-        ocr_result_paths=result_md_paths,
         step='IN-PROGRESS',
+        ocr_result_paths=result_md_paths,
         ocr_resolver=ocr_resolver)
 
 
@@ -22,12 +22,7 @@ def get_markdown_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocum
     index_name = state['index_name']
     ocr_resolver = state['ocr_resolver']
     md_files = ocr_resolver.get_md_result_files(index_name=index_name)
-    return AdvancedDocumentPreprocessorState(markdown_paths=md_files)
-
-
-def text_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
-    md_files = state['markdown_paths']
-    documents = []
+    text_contents = []
     for md_file in md_files:
         loader = UnstructuredMarkdownLoader(
             md_file,
@@ -35,19 +30,8 @@ def text_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPrepr
             strategy="fast"
         )
         doc = loader.load()
-        documents.extend(doc)
-    for doc in documents:
-        filename = doc.metadata['source'].split("\\")[-1]
-        doc.metadata['filename'] = filename
-        doc.metadata['additional_content'] = ''
-        doc.metadata['category'] = 'Plain'
-        del doc.metadata['source']
-    return AdvancedDocumentPreprocessorState(text_contents=documents)
-
-
-def table_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
-    md_files = state['markdown_paths']
-    documents = []
+        text_contents.extend(doc)
+    table_contents = []
     for md_file in md_files:
         loader = UnstructuredMarkdownLoader(
             md_file,
@@ -55,12 +39,42 @@ def table_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPrep
             strategy="fast"
         )
         doc = loader.load()
-        documents.extend(doc)
-    table_contents = []
-    for doc in documents:
+        table_contents.extend(doc)
+    return AdvancedDocumentPreprocessorState(
+        markdown_paths=md_files,
+        text_contents=text_contents,
+        table_contents=table_contents
+    )
+
+
+def text_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
+    text_contents = state['text_contents']
+    for doc in text_contents:
+        filename = doc.metadata['source'].split("\\")[-1]
+        doc.metadata['filename'] = filename
+        doc.metadata['additional_content'] = ''
+        doc.metadata['category'] = 'Plain'
+        del doc.metadata['source']
+    return AdvancedDocumentPreprocessorState(text_contents=text_contents)
+
+
+def image_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
+    index_name = state['index_name']
+    return AdvancedDocumentPreprocessorState(index_name=index_name)
+
+
+def save_image_node(state: AdvancedDocumentPreprocessorState):
+    index_name = state['index_name']
+    return AdvancedDocumentPreprocessorState(index_name=index_name)
+
+
+def table_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
+    table_contents = state['table_contents']
+    documents = []
+    for doc in table_contents:
         if doc.metadata['category'] == 'Table':
-            table_contents.append(doc)
-    return AdvancedDocumentPreprocessorState(table_contents=table_contents)
+            documents.append(doc)
+    return AdvancedDocumentPreprocessorState(table_contents=documents)
 
 
 def table_summary_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
@@ -115,4 +129,16 @@ def gen_keywords_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocum
 
 
 def embedding_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
-    return AdvancedDocumentPreprocessorState()
+    documents = state['documents']
+    index_name = state['index_name']
+    keywords = state['keywords']
+    vector_store = VectorDatabase()
+    vector_store.generate_collection_idx(index_name)
+    vector_store.hybrid_embedding(
+        collection_name=index_name,
+        docs=documents,
+        keywords=keywords,
+        dense_embedding=TransformersDenseEmbeddings(),
+        sparse_embedding=TransformersSparseEmbeddings()
+    )
+    return AdvancedDocumentPreprocessorState(step='DONE')
