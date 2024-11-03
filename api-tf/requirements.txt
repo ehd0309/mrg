@@ -8,3 +8,4 @@ tokenizers
 scipy
 FlagEmbedding
 python-dotenv
+peft
