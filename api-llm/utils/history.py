@@ -1,5 +1,7 @@
 import json
 from pathlib import Path
+from typing import Dict, Any
+
 from dotenv import load_dotenv
 import logging
 
@@ -45,3 +47,13 @@ def get_existing_keys() -> list:
         history_data = json.load(f)
 
     return list(history_data.keys())
+
+
+def get_values_from_history(index_name: str) -> Dict[str, Any]:
+    history_path = Path(__file__).parent.parent / 'assets/history.json'
+    if not history_path.exists():
+        return {}
+    with open(history_path, 'r', encoding='utf-8') as f:
+        history_data = json.load(f)
+    history = history_data.get(index_name, {})
+    return history
