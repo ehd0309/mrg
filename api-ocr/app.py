@@ -28,7 +28,7 @@ def gen_md_with_prepared_image():
 
 
 @app.route("/v2/ocr/md", methods=["POST"])
-def gen_md_with_prepared_image():
+def gen_md_with_prepared_image2():
     request_json = request.get_json()
     index_name = request_json['index']
     results = pdf_to_md_v2(index_name)
