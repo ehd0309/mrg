@@ -1,0 +1,29 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+requests = "*"
+setuptools = "*"
+langchain = "==0.3.7"
+langchain-openai = "*"
+langchain-community = "*"
+langchain-milvus = "*"
+tqdm = "*"
+httpx = "*"
+tiktoken = "*"
+openai = "*"
+langchain-huggingface = "*"
+langchain-ollama = "*"
+langgraph = "*"
+markdown = "*"
+ipython = "*"
+uvicorn = "*"
+websockets = "*"
+fastapi = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.12"
