@@ -18,7 +18,7 @@ def pdf_to_md(index_name):
     for fname in fnames:
         file_path = get_input_path().resolve() / index_name / (fname + ".pdf")
         full_text, images, out_meta = det_rec_all(file_path, model_list)
-        result_path = save_markdown(str(get_output_path()), fname + '.md', full_text, images, out_meta)
+        result_path = save_markdown(str(get_output_path() / index_name), fname + '.md', full_text, images, out_meta)
         print(f"Saved markdown to the {result_path} folder")
         result_mds.append(result_path)
         del result_path
