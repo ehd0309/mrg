@@ -14,6 +14,7 @@ router = APIRouter(
 
 class GenerateRequest(BaseModel):
     index_name: str
+    file_name: str
 
 
 class InvokeChatRequest(BaseModel):
@@ -24,12 +25,15 @@ class InvokeChatRequest(BaseModel):
 @router.post("/rags")
 async def generate(generate_request: GenerateRequest):
     index_name = generate_request.index_name
+    file_name = generate_request.file_name
     if check_history_exists(index_name):
         return HTTPException(status_code=400, detail="already exists")
     from flows.v1_ingest_flow import init_workflow
     ingest = init_workflow()
     result = ingest.invoke({"index_name": index_name})
-    gen_history(index_name, {"ocr_result_paths": result.get("ocr_result_paths"), "step": result.get("step")})
+    gen_history(index_name,
+                {"file_name": file_name, "ocr_result_paths": result.get("ocr_result_paths"), "step": result.get("step"),
+                 "version": "v1"})
     return {'message': index_name + ' was ingested successfully', 'index_name': index_name}
 
 
@@ -44,7 +48,7 @@ async def invoke_chat(invoke_request: InvokeChatRequest):
                 stream_mode="answer"):
             kind = event["event"]
             if kind == "on_llm_stream":
-                yield f"data: {event['data']['chunk']}\n\n"
+                yield f"{event['data']['chunk']}"
             if kind == 'on_llm_end':
                 print(event)
 
