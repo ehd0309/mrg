@@ -21,11 +21,28 @@ class Prompt(object):
         human = """
         #Question: 
         {question} 
-        
+
         #Context: 
         {context} 
-        
+
         #Answer:
+        """
+        return ChatPromptTemplate.from_messages(
+            [sys, human])
+
+    @staticmethod
+    def table_summary():
+        sys = """
+        You are an assistant tasked with summarizing tables and text for retrieval.
+        These summaries will be embedded and used to retrieve the raw text or table elements.
+        Give a concise summary of the html table that is well optimized for retrieval.
+        Do not exceed 200 characters.
+        """
+        human = """
+        #Table:
+        {table}
+
+        #Summary:
         """
         return ChatPromptTemplate.from_messages(
             [sys, human])

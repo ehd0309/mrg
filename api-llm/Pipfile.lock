@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "36a752d0378ad1fd5b5eba70588c26f662117d3edb61cc4d2b36af985e332726"
+            "sha256": "610897d1f4bd4832c1101ea5011d42391fe66fcdd9c525d98de93c45d06b02e2"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -800,6 +800,15 @@
             ],
             "markers": "python_version >= '3.9' and python_version < '4.0'",
             "version": "==0.3.15"
+        },
+        "langchain-experimental": {
+            "hashes": [
+                "sha256:6bbcdcd084581432ef4b5d732294a59d75a858ede1714b50a5b79bcfe31fa306",
+                "sha256:da01aafc162631475f306ca368ecae74d5becd93b8039bddb6315e755e274580"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.9' and python_version < '4.0'",
+            "version": "==0.3.3"
         },
         "langchain-huggingface": {
             "hashes": [

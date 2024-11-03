@@ -5,6 +5,18 @@ from langchain_core.documents import Document
 from components import OCRResolver
 
 
+class AdvancedDocumentPreprocessorState(TypedDict):
+    index_name: str
+    markdown_paths: list[str]
+    ocr_resolver: OCRResolver
+    ocr_result_paths: list[str]
+    documents: List[Document]
+    text_contents: List[Document]
+    table_contents: List[Document]
+    keywords: list[list[str]]
+    step: str
+
+
 class BaseDocumentPreProcessorState(TypedDict):
     """
     State for OCR document preprocessor Graph

@@ -25,6 +25,17 @@ class OCRResolver(object):
         result = response.json()
         return result["md_paths"]
 
+    def gen_md_from_pdf_v2(self, index_name: str) -> List[str]:
+        path = self._ocr_endpoint + '/v2/ocr/md'
+        response = requests.post(
+            path,
+            json={"index": index_name}
+        )
+        if response.status_code != 200:
+            raise ValueError(f"Request failed: {response.status_code}, {response.text}")
+        result = response.json()
+        return result["md_paths"]
+
     def get_md_result_files(self, index_name: str) -> List[str]:
         md_files = [str(file) for file in (self._ocr_result_path / index_name).glob("*.md")]
         return md_files

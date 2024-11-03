@@ -22,6 +22,7 @@ ipython = "*"
 uvicorn = "*"
 websockets = "*"
 fastapi = "*"
+langchain-experimental = "*"
 
 [dev-packages]
 
