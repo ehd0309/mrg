@@ -4,6 +4,8 @@ import clsx from "clsx";
 
 import "./globals.css";
 import { Providers } from "@/libs/provider";
+import Header from "@/components/Header";
+import Sidebar from "@/components/Sidebar";
 
 const font = Noto_Sans_KR({ subsets: ["latin"] });
 
@@ -24,7 +26,11 @@ export default function RootLayout({
         style={{ minHeight: "100dvh" }}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
-          {children}
+          <Header />
+          <div className="flex flex-start items-start w-full h-[calc(100vh - 52px)]">
+            <Sidebar />
+            <div className="flex-1 h-full">{children}</div>
+          </div>
         </Providers>
       </body>
     </html>
