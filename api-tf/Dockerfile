@@ -34,8 +34,8 @@ COPY . .
 RUN pip install -r requirements.txt
 RUN pip install flask flask-cors gunicorn
 
-EXPOSE 5000
-ENV PORT=5000
+EXPOSE 5001
+ENV PORT=5001
 ENV HF_HOME=/usr/.hf-cache
 
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "--workers", "3", "--timeout", "7200", "app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:5001", "--workers", "3", "--timeout", "7200", "app:app"]

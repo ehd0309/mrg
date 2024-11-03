@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  
   # OLLAMA API
   ollama-api:
     container_name: pds-ollama
@@ -24,6 +25,7 @@ services:
     networks:
       - park
 
+  
   # OCR API
   ocr-api:
     container_name: pds-ocr
@@ -47,22 +49,21 @@ services:
               capabilities: ["gpu"]
     networks:
       - park
-  # Transformer jupyter env
-  tf-jupyter:
+
+  # Transformer API
+  tf-api:
     build:
       context: ./api-tf
       dockerfile: Dockerfile
-      target: jupyter-runner
-    container_name: pds-tf-jup
-    image: pds-tf-jup:latest
+      target: flask-runner
+    container_name: pds-tf-api
+    image: pds-tf-api:latest
     runtime: nvidia
     environment:
       - NVIDIA_VISIBLE_DEVICES=2
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
       - CHOWN_HOME=yes
       - CHOWN_HOME_OPTS=-R
-      - PORT=8888
-    user: root
     deploy:
       resources:
         reservations:
@@ -71,12 +72,31 @@ services:
               device_ids: ["2"]
               capabilities: ["gpu"]
     ports:
-      - "10672:8888"
+      - "10672:5001"
     volumes:
       - ./api-tf/workspace:/app/workspace
       - ./api-tf/.hf-cache:/usr/.hf-cache
     networks:
       - park
+
+  # LLM API
+  llm-api:
+    build:
+      context: ./api-llm
+      dockerfile: Dockerfile
+    container_name: pds-llm-api
+    image: pds-llm-api:latest
+    environment:
+      - TRANSFORMER_URL=http://pds-tf-api:5001
+      - MILVUS_URL=http://pds-milvus-standalone:19530
+      - OCR_URL=http://pds-ocr:5000
+      - OLLAMA_URL=http://pds-ollama:11434
+    ports:
+      - "10673:8000"
+    volumes:
+      - ./api-ocr/assets:/app/assets
+    networks:
+      - park      
 networks:
   park:
     external: true
