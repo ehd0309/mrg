@@ -61,7 +61,7 @@ def deidentify_token():
 
 
 @app.route("/api/token/keywords", methods=["POST"])
-def deidentify_token():
+def generate_keywords():
     request_json = request.get_json()
     sentences = request_json['sentences']
     results = generate_keywords(sentences)
