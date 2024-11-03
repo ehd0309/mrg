@@ -56,8 +56,8 @@ services:
       context: ./api-tf
       dockerfile: Dockerfile
       target: flask-runner
-    container_name: pds-tf-jup
-    image: pds-tf-jup:latest
+    container_name: pds-tf-api
+    image: pds-tf-api:latest
     runtime: nvidia
     environment:
       - NVIDIA_VISIBLE_DEVICES=2
@@ -87,7 +87,7 @@ services:
     container_name: pds-llm-api
     image: pds-llm-api:latest
     environment:
-      - TRANSFORMER_URL=2
+      - TRANSFORMER_URL=http://pds-tf-api:5001
       - MILVUS_URL=http://pds-milvus-standalone:19530
       - OCR_URL=http://pds-ocr:5000
       - OLLAMA_URL=http://pds-ollama:11434
