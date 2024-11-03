@@ -9,3 +9,5 @@ scipy
 FlagEmbedding
 python-dotenv
 peft
+keybert
+kiwipiepy
