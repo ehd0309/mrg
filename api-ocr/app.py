@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from dotenv import load_dotenv
-from core import pdf_to_md
+from core import pdf_to_md, pdf_to_md_v2
 
 load_dotenv()
 
@@ -18,13 +18,26 @@ def index():
 @app.route("/v1/ocr/md", methods=["POST"])
 def gen_md_with_prepared_image():
     request_json = request.get_json()
-    center_type = request_json['index']
-    results = pdf_to_md(center_type)
+    index_name = request_json['index']
+    results = pdf_to_md(index_name)
     return jsonify(
         {
             "md_paths": results
         }
     )
+
+
+@app.route("/v2/ocr/md", methods=["POST"])
+def gen_md_with_prepared_image():
+    request_json = request.get_json()
+    index_name = request_json['index']
+    results = pdf_to_md_v2(index_name)
+    return jsonify(
+        {
+            "md_paths": results
+        }
+    )
+
 
 @app.after_request
 def after_request(response):
