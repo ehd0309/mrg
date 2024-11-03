@@ -1,66 +1,30 @@
 "use client";
 
-import { api } from "@/api";
 import { ChatMessage } from "@/type/chat";
-import { Button, Input, Textarea } from "@nextui-org/react";
+import { Button, Textarea } from "@nextui-org/react";
 import Image from "next/image";
-import { useState } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 interface ChatProps {
   id: string;
   version: "v1" | "v2" | "v3";
+  chatHistory: ChatMessage[];
+  currentQuery: string;
+  currentChat: string;
+  isGenerating: boolean;
+  setCurrentQuery: (query: string) => void;
+  handleSendChat: () => void;
 }
 
-const Chat = ({ id, version }: ChatProps) => {
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
-    {
-      message: `### 안녕하세요 \n\n 무엇을 도와드릴까요`,
-      sender: "bot",
-      timestamp: new Date().toString(),
-    },
-  ]);
-  const [currentQuery, setCurrentQuery] = useState<string>("");
-  const [currentChat, setCurrentChat] = useState<string>("");
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const handleSendChat = async () => {
-    setCurrentQuery("");
-    setChatHistory((prev) => [
-      ...prev,
-      {
-        message: currentQuery,
-        sender: "user",
-        timestamp: new Date().toString(),
-      },
-    ]);
-    const { decoder, reader } = await api.postRagChat(
-      id,
-      currentQuery,
-      version
-    );
-    setIsGenerating(true);
-    let finalMessage = "";
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value, { stream: true });
-      let message = chunk;
-      finalMessage += message;
-      setCurrentChat((prevMessages) => prevMessages + message);
-    }
-    setIsGenerating(false);
-    setCurrentChat(() => "");
-    setChatHistory((prev) => [
-      ...prev,
-      {
-        message: finalMessage,
-        sender: "bot",
-        timestamp: new Date().toString(),
-      },
-    ]);
-  };
+const Chat = ({
+  chatHistory,
+  currentQuery,
+  currentChat,
+  isGenerating,
+  setCurrentQuery,
+  handleSendChat,
+}: ChatProps) => {
   return (
     <>
       <div className="flex flex-col gap-4">

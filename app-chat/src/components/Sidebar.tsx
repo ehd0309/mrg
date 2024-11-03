@@ -1,6 +1,5 @@
 import { api } from "@/api";
-import { LC_BACKEND_URL } from "@/constants";
-import { Button, Divider } from "@nextui-org/react";
+import { Divider } from "@nextui-org/react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -31,9 +30,8 @@ const Sidebar = async () => {
           Document List <span className="text-[8px]">▼</span>
         </p>
         {keys?.map((key: string) => (
-          <div>
+          <div key={key}>
             <Link
-              key={key}
               href={"/chat/" + key}
               className="my-4 border-none text-white hover:text-default-400 flex"
             >

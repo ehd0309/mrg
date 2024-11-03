@@ -22,3 +22,5 @@ async def read_item(id):
 @router.get("/rags/check")
 async def generate(index_name: str):
     return {"exists": check_history_exists(index_name)}
+
+

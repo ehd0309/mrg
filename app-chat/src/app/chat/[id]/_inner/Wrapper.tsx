@@ -1,7 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Chat from "@/app/chat/[id]/_inner/Chat";
 import { Tabs, Tab, Card, CardBody } from "@nextui-org/react";
+import { ChatMessage } from "@/type/chat";
+import { api } from "@/api";
+import Pipeline from "./Pipeline";
 
 interface WrapperProps {
   id: string;
@@ -10,13 +14,80 @@ interface WrapperProps {
 
 const Wrapper = ({ id, version }: WrapperProps) => {
   const cardClasses = "min-h-[calc(100vh-18rem)]";
+
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
+    {
+      message: `### 안녕하세요 \n\n 무엇을 도와드릴까요`,
+      sender: "bot",
+      timestamp: new Date().toString(),
+    },
+  ]);
+
+  const [currentQuery, setCurrentQuery] = useState<string>("");
+  const [currentChat, setCurrentChat] = useState<string>("");
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [preImage, setPreImage] = useState(null);
+  const [postImage, setPostImage] = useState(null);
+
+  useEffect(() => {
+      (async () => {
+          const { post_process_image, pre_process_image } = await api.getRagPipelineById(id, version);
+          setPostImage(post_process_image);
+          setPreImage(pre_process_image);
+      })();
+  } ,[id, version])
+
+  const handleSendChat = async () => {
+    setCurrentQuery("");
+    setChatHistory((prev) => [
+      ...prev,
+      {
+        message: currentQuery,
+        sender: "user",
+        timestamp: new Date().toString(),
+      },
+    ]);
+
+    const { decoder, reader } = await api.postRagChat(id, currentQuery, version);
+    setIsGenerating(true);
+    let finalMessage = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      let message = chunk;
+      finalMessage += message;
+      setCurrentChat((prevMessages) => prevMessages + message);
+    }
+    setIsGenerating(false);
+    setCurrentChat(() => "");
+    setChatHistory((prev) => [
+      ...prev,
+      {
+        message: finalMessage,
+        sender: "bot",
+        timestamp: new Date().toString(),
+      },
+    ]);
+  };
+
   return (
     <div className="flex w-full flex-col">
       <Tabs color="primary" aria-label="Options">
         <Tab key="chat" title="CHAT">
           <Card className={`${cardClasses} border-none shadow-none`}>
             <CardBody className="flex flex-col justify-between relative">
-              <Chat id={id} version={version} />
+              <Chat
+                id={id}
+                version={version}
+                chatHistory={chatHistory}
+                currentQuery={currentQuery}
+                currentChat={currentChat}
+                isGenerating={isGenerating}
+                setCurrentQuery={setCurrentQuery}
+                handleSendChat={handleSendChat}
+              />
             </CardBody>
           </Card>
         </Tab>
@@ -31,10 +102,9 @@ const Wrapper = ({ id, version }: WrapperProps) => {
           </Card>
         </Tab>
         <Tab key="graph" title="GRAPH">
-          <Card className={cardClasses}>
-            <CardBody>
-              Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
-              officia deserunt mollit anim id est laborum.
+        <Card className={`${cardClasses} border-none shadow-none`}>
+        <CardBody>
+             <Pipeline pre_process_image={preImage} post_process_image={postImage} />
             </CardBody>
           </Card>
         </Tab>

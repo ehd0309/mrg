@@ -14,6 +14,12 @@ export const api = {
     }).then((res) => res.json());
     return info as RagInfo;
   },
+  getRagPipelineById: async (id: string, version: 'v1' | 'v2' | 'v3') => {
+    const { pre_process_image, post_process_image } = await fetch(LC_BACKEND_URL + "/api/" + version + "/rags/pipeline/" + id, {
+      cache: 'no-cache',
+    }).then((res) => res.json());
+    return { pre_process_image, post_process_image }
+  },
   postRagChat: async (
     id: string,
     question: string,
