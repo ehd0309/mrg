@@ -1,5 +1,7 @@
 from marker.convert import convert_single_pdf
 from marker.models import load_all_models
+from utils.index import load_input_images, get_input_path, get_output_path
+
 
 def det_rec_all(file_path, model_list):
     return convert_single_pdf(file_path, model_list, langs=["ko", "en"],
@@ -28,7 +30,5 @@ def pdf_to_md(index_name):
 
 
 if __name__ == "__main__":
-    from utils import load_input_images, get_output_path, get_input_path
-
     res = pdf_to_md('yunv2')
     print(res)
