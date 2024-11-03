@@ -1,0 +1,11 @@
+accelerate
+numpy
+torch
+torchvision
+transformers
+datasets
+tokenizers
+scipy
+FlagEmbedding
+python-dotenv
+peft
