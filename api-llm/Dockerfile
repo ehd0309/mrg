@@ -14,7 +14,7 @@ COPY . .
 RUN pip install pipenv
 RUN pipenv requirements > requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install unstructured
+RUN pip install unstructured==0.15.14
 
 EXPOSE 8000
 

@@ -81,7 +81,7 @@ class VectorDatabase(object):
 
     def hybrid_embedding(self, collection_name: str, dense_embedding: EmbeddingType, sparse_embedding: EmbeddingType,
                          docs: List[Document],
-                         keywords: list[list[str]]
+                         keywords: list[str]
                          , **kwargs):
         collection = self.get_collection(collection_name=collection_name)
         entities = []
@@ -89,7 +89,7 @@ class VectorDatabase(object):
             entity = {
                 self.text_field_name: doc.page_content,
                 self.dense_vector_field: dense_embedding.embed_documents([doc.page_content])[0],
-                self.sparse_vector_field: sparse_embedding.embed_documents([" ".join(keywords[idx])])[0],
+                self.sparse_vector_field: sparse_embedding.embed_documents([keywords[idx]])[0],
                 self.category_field: doc.metadata[self.category_field],
                 self.additional_content_field: doc.metadata[self.additional_content_field],
                 self.filename_field: doc.metadata[self.filename_field]

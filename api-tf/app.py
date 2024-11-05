@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from models import gen_dense_embedding, gen_sparse_embedding, deidentify_kr_names, generate_keywords
+from models import gen_dense_embedding, gen_sparse_embedding, deidentify_kr_names, generate_morphs
 
 from dotenv import load_dotenv
 
@@ -64,7 +64,7 @@ def deidentify_token():
 def gen_keywords():
     request_json = request.get_json()
     sentences = request_json['sentences']
-    results = generate_keywords(sentences)
+    results = generate_morphs(sentences)
     return jsonify(
         {
             "sentences": results
