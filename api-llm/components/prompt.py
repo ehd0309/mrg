@@ -36,7 +36,6 @@ class Prompt(object):
         You are an assistant tasked with summarizing tables and text for retrieval.
         These summaries will be embedded and used to retrieve the raw text or table elements.
         Give a concise summary of the html table that is well optimized for retrieval.
-        Do not exceed 200 characters.
         """
         human = """
         #Table:
