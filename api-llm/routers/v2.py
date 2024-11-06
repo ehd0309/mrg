@@ -36,6 +36,7 @@ async def generate(generate_request: GenerateRequest):
                  "version": "v2"})
     return {'message': index_name + ' was ingested successfully', 'index_name': index_name}
 
+
 # @router.post("/rags/chat")
 # async def invoke_chat(invoke_request: InvokeChatRequest):
 #     from flows.v1_retrieve_flow import init_workflow
@@ -70,3 +71,8 @@ async def generate(generate_request: GenerateRequest):
 #         })
 #     except Exception as e:
 #         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, log_config='../logging.conf')
