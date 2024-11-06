@@ -35,7 +35,7 @@ def pseudonymizate_kr_names(sentences: List[str]):
         for r in result:
             if r['score'] < 0.7:
                 continue
-            if r['entity'] != 'PERSON':
+            if r['label'] != 'PERSON':
                 continue
             start_idx = r['start']
             end_idx = r['end']
