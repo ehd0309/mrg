@@ -45,8 +45,7 @@ def cal_text_pairs_rank(p: List[Tuple[str, str]]) -> List[float]:
         inputs = {key: value.to(device) for key, value in inputs.items()}
         scores = bge_reranker_model(**inputs, return_dict=True).logits.view(-1, ).float()
         scores = exp_norm(scores.cpu().numpy())
-    print(np.round(scores * 100, 2))
-    return scores
+    return scores.tolist()
 
 
 if __name__ == '__main__':
