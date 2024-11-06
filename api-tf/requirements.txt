@@ -12,3 +12,5 @@ peft
 keybert
 kiwipiepy
 konlpy
+gliner
+python-mecab-ko

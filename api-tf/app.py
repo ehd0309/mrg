@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from models import gen_dense_embedding, gen_sparse_embedding, deidentify_kr_names, generate_morphs
+from models import gen_dense_embedding, gen_sparse_embedding, pseudonymizate_kr_names, generate_morphs
 
 from dotenv import load_dotenv
 
@@ -49,10 +49,10 @@ def gen_sparse_embeddings():
 
 
 @app.route("/api/token/de-identify", methods=["POST"])
-def deidentify_token():
+def pseudonymizate_token():
     request_json = request.get_json()
     sentences = request_json['sentences']
-    results = deidentify_kr_names(sentences)
+    results = pseudonymizate_kr_names(sentences)
     return jsonify(
         {
             "sentences": results

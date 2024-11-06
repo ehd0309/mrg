@@ -3,6 +3,7 @@ from keybert import KeyBERT
 from kiwipiepy import Kiwi
 from konlpy.tag import Okt
 import re
+from gliner import GLiNER
 
 okt = Okt()
 
@@ -12,30 +13,29 @@ import torch
 
 
 def load_kr_ner():
-    tokenizer = AutoTokenizer.from_pretrained("yeajinmin/NER-NewsBI-150142-e3b4")
-    model = AutoModelForTokenClassification.from_pretrained("yeajinmin/NER-NewsBI-150142-e3b4")
-    ner = pipeline("ner", model=model, tokenizer=tokenizer,
-                   device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"))
-    return ner
+    model = GLiNER.from_pretrained("taeminlee/gliner_ko")
+    return model
 
 
-def inference_kr_name(text):
-    ner_pipe = load_kr_ner()
-    results = ner_pipe(text)
-    del ner_pipe
-    gc.collect()
-    return results
+def inference_kr_name(text, model):
+    person_labels = ["PERSON"]
+    entities = model.predict_entities(text, person_labels)
+    return entities
 
 
-def deidentify_kr_names(sentences: List[str]):
-    results = inference_kr_name(sentences)
+def pseudonymizate_kr_names(sentences: List[str]):
+    model = load_kr_ner()
+    results = []
+    for sentence in sentences:
+        result = inference_kr_name(sentence, model)
+        results.append(result)
     deidentify_sentences = sentences.copy()
     del sentences
     for idx, result in enumerate(results):
         for r in result:
-            if r['score'] < 0.5:
+            if r['score'] < 0.7:
                 continue
-            if r['entity'] != 'I-PS_NAME':
+            if r['entity'] != 'PERSON':
                 continue
             start_idx = r['start']
             end_idx = r['end']
@@ -45,6 +45,7 @@ def deidentify_kr_names(sentences: List[str]):
                     deidentify_sentences[idx][end_idx:]
             )
     del results
+    del model
     gc.collect()
     return deidentify_sentences
 
@@ -104,14 +105,10 @@ def generate_morphs(sentences: List[str]):
     keywords = []
     for sentence in sentences:
         result = []
-        # 텍스트를 공백 기준으로 분할하여 각 단어 처리
         for word in sentence.split():
-            # 한글로만 이루어진 단어인지 확인
             if re.match("^[가-힣]+$", word):
-                # 한글인 경우 형태소 분석 수행
                 result.extend(okt.morphs(word))
             else:
-                # 한글이 아닌 경우 그대로 추가
                 result.append(word)
         keywords.append(" ".join(result))
     return keywords
