@@ -23,24 +23,16 @@ def inference_kr_name(text, model):
     return entities
 
 
-def pseudonymizate_kr_names(sentences: List[str]):
+def extract_kr_names(sentences: List[str]):
     model = load_kr_ner()
     results = []
     for sentence in sentences:
         noun_sentence = noun_text(sentence)
         result = inference_kr_name(noun_sentence, model)
         results.append(result)
-    for idx, result in enumerate(results):
-        for r in result:
-            if r['score'] < 0.75:
-                continue
-            if r['label'] != 'PERSON':
-                continue
-            sentences[idx] = sentences[idx].replace(r['text'], r['text'][0] + "○" * (len(r['text']) - 1))
-    del results
     del model
     gc.collect()
-    return sentences
+    return results
 
 
 def noun_extractor(text):
@@ -111,5 +103,5 @@ if __name__ == "__main__":
     sens = ['박동석이 춤을 춘다. 박동석이 미쳐 날뛴다. 김갑환은 발차기를 한다 민선호/민선기/민소현', 'hello world 방사선치료를 받아보자']
     print(noun_extractor(sens[0]))
     print(noun_extractor(sens[1]))
-    res = pseudonymizate_kr_names(sens)
+    res = extract_kr_names(sens)
     print(res)
