@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from models import gen_dense_embedding, gen_sparse_embedding, extract_kr_names, generate_morphs
+from models import gen_dense_embedding, gen_sparse_embedding, extract_kr_names, generate_morphs, cal_text_pairs_rank
 
 from dotenv import load_dotenv
 
@@ -44,6 +44,18 @@ def gen_sparse_embeddings():
     return jsonify(
         {
             "embeddings": response
+        }
+    )
+
+
+@app.route("/api/embed/ranks", methods=["POST"])
+def gen_sentence_ranks():
+    request_json = request.get_json()
+    text_pairs = request_json['text_pairs']
+    results = cal_text_pairs_rank(text_pairs)
+    return jsonify(
+        {
+            "ranks": results
         }
     )
 
