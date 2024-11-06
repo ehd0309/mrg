@@ -13,7 +13,9 @@ import torch
 
 
 def load_kr_ner():
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     ner_model = GLiNER.from_pretrained("taeminlee/gliner_ko")
+    ner_model.to(device)
     return ner_model
 
 
