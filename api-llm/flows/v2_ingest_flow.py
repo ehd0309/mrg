@@ -7,7 +7,6 @@ from chains.v2_prep_node import (ocr_node,
                                  table_summary_node,
                                  de_identify_node,
                                  semantic_text_splitter_node,
-                                 merge_documents_node,
                                  gen_keywords_node,
                                  embedding_node,
                                  get_markdown_node,
@@ -17,36 +16,40 @@ from chains.v2_prep_node import (ocr_node,
 
 
 def init_workflow():
-    _workflow = StateGraph(AdvancedDocumentPreprocessorState)
-    _workflow.add_node('OCR', ocr_node)
-    _workflow.add_node('Generate Markdown Format', get_markdown_node)
-    _workflow.add_node('Extract Text', text_node)
-    _workflow.add_node('Extract Table', table_node)
-    _workflow.add_node('Extract Image', image_node)
-    _workflow.add_node('Save Image', save_image_node)
-    _workflow.add_node('Generate Table Summary', table_summary_node)
-    _workflow.add_node('Semantic Chunking', semantic_text_splitter_node)
-    _workflow.add_node('Merge Document', merge_documents_node)
-    _workflow.add_node('가명화', de_identify_node)
-    _workflow.add_node('키워드 추출', gen_keywords_node)
-    _workflow.add_node('vector&bm25 embedding', embedding_node)
+    # table_builder = StateGraph(AdvancedDocumentPreprocessorState)
+    # table_builder.add_node("Extract Table", table_node)
+    # table_builder.add_node("Summarize Table", table_summary_node)
+    # table_builder.add_edge(START, "Extract Table")
+    # table_builder.add_edge("Extract Table", "Summarize Table")
+    # table_graph = table_builder.compile()
 
-    _workflow.add_edge(START, 'OCR')
-    _workflow.add_edge('OCR', 'Generate Markdown Format')
-    _workflow.add_edge('Generate Markdown Format', 'Extract Text')
-    _workflow.add_edge('Generate Markdown Format', 'Extract Table')
-    _workflow.add_edge('Generate Markdown Format', 'Extract Image')
-    _workflow.add_edge('Extract Table', 'Generate Table Summary')
-    _workflow.add_edge('Extract Image', 'Save Image')
-    _workflow.add_edge('Extract Text', 'Merge Document')
-    _workflow.add_edge('Generate Table Summary', 'Merge Document')
-    _workflow.add_edge('Merge Document', 'Semantic Chunking')
-    _workflow.add_edge('Semantic Chunking', '가명화')
-    _workflow.add_edge('가명화', '키워드 추출')
-    _workflow.add_edge('키워드 추출', 'vector&bm25 embedding')
-    _workflow.add_edge('vector&bm25 embedding', END)
+    parent_builder = StateGraph(AdvancedDocumentPreprocessorState)
+    parent_builder.add_node('OCR', ocr_node)
+    parent_builder.add_node('Generate Markdown Format', get_markdown_node)
+    parent_builder.add_node('Extract Text', text_node)
+    parent_builder.add_node('Extract Table', table_node)
+    parent_builder.add_node('Extract Image', image_node)
+    parent_builder.add_node('Save Image', save_image_node)
+    parent_builder.add_node('Generate Table Summary', table_summary_node)
+    parent_builder.add_node('Semantic Chunking', semantic_text_splitter_node)
+    parent_builder.add_node('가명화', de_identify_node)
+    parent_builder.add_node('키워드 추출', gen_keywords_node)
+    parent_builder.add_node('vector&bm25 embedding', embedding_node)
 
-    return _workflow.compile()
+    parent_builder.add_edge(START, 'OCR')
+    parent_builder.add_edge('OCR', 'Generate Markdown Format')
+    parent_builder.add_edge('Generate Markdown Format', '가명화')
+    parent_builder.add_edge('가명화', 'Extract Text')
+    parent_builder.add_edge('가명화', 'Extract Table')
+    parent_builder.add_edge('가명화', 'Extract Image')
+    parent_builder.add_edge('Extract Table', 'Generate Table Summary')
+    parent_builder.add_edge('Extract Image', 'Save Image')
+    parent_builder.add_edge(['Extract Text', 'Generate Table Summary'], 'Semantic Chunking')
+    parent_builder.add_edge('Semantic Chunking', '키워드 추출')
+    parent_builder.add_edge('키워드 추출', 'vector&bm25 embedding')
+    parent_builder.add_edge('vector&bm25 embedding', END)
+
+    return parent_builder.compile()
 
 
 if __name__ == '__main__':

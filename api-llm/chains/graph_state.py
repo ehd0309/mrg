@@ -1,8 +1,9 @@
-from typing import Any, List, TypedDict
+from typing import Any, List, TypedDict, Annotated
 
 from langchain_core.documents import Document
 
 from components import OCRResolver
+import operator
 
 
 class AdvancedDocumentPreprocessorState(TypedDict):
@@ -10,10 +11,10 @@ class AdvancedDocumentPreprocessorState(TypedDict):
     markdown_paths: list[str]
     ocr_resolver: OCRResolver
     ocr_result_paths: list[str]
-    documents: List[Document]
+    raw_documents: List[List[Document]]
+    documents: Annotated[List[Document], operator.add]
     text_contents: List[Document]
     table_contents: List[Document]
-    merged_documents: List[Document]
     keywords: list[str]
     step: str
 
@@ -33,6 +34,16 @@ class BaseDocumentPreProcessorState(TypedDict):
     ocr_result_paths: list[str]
     documents: List[Document]
     step: str
+
+
+class AdvancedRAGGraphState(TypedDict):
+    index_name: str
+    question: str
+    answer: str
+    contexts: List[Document]
+    step: str
+    chain: Any
+    callback: Any
 
 
 class BaseRAGGraphState(TypedDict):

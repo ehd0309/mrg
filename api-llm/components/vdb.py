@@ -1,6 +1,7 @@
 from typing import Union, List, Literal, Any
 
 from langchain_milvus.vectorstores.milvus import EmbeddingType
+from langchain_milvus import MilvusCollectionHybridSearchRetriever
 
 from utils import EnvFinder
 from langchain_milvus import Milvus
@@ -11,6 +12,7 @@ from pymilvus import (
     DataType,
     FieldSchema,
     connections,
+    WeightedRanker
 )
 import datetime
 
@@ -29,6 +31,7 @@ class VectorDatabase(object):
     filename_field: str = 'filename'
     additional_content_field: str = 'additional_content'
     category_field: str = 'category'
+    last_modified_field: str = 'last_modified'
 
     def __init__(self):
         self._env_finder = EnvFinder()
@@ -48,6 +51,27 @@ class VectorDatabase(object):
         )
         return vector_store
 
+    def load_hybrid_retriever(self,
+                              collection_name: str,
+                              dense_embedding: EmbeddingType,
+                              sparse_embedding: EmbeddingType,
+                              top_k: int
+                              ):
+        dense_param = VectorDatabase.get_idx('dense')
+        sparse_param = VectorDatabase.get_idx('sparse')
+        collection = self.get_collection(collection_name)
+        retriever = MilvusCollectionHybridSearchRetriever(
+            collection=collection,
+            rerank=WeightedRanker(0.6, 0.4),
+            field_embeddings=[dense_embedding, sparse_embedding],
+            field_search_params=[dense_param, sparse_param],
+            anns_fields=[self.dense_vector_field, self.sparse_vector_field],
+            top_k=top_k,
+            text_field='text'
+
+        )
+        return retriever
+
     @staticmethod
     def get_idx(type: Literal['dense', 'sparse']):
         if type == 'dense':
@@ -65,6 +89,7 @@ class VectorDatabase(object):
             FieldSchema(name=self.category_field, dtype=DataType.VARCHAR, max_length=65_535),
             FieldSchema(name=self.filename_field, dtype=DataType.VARCHAR, max_length=65_535),
             FieldSchema(name=self.additional_content_field, dtype=DataType.VARCHAR, max_length=65_535),
+            FieldSchema(name=self.last_modified_field, dtype=DataType.VARCHAR, max_length=65_535),
         ]
         schema = CollectionSchema(fields=fields, enable_dynamic_field=True)
         collection = Collection(
@@ -92,7 +117,8 @@ class VectorDatabase(object):
                 self.sparse_vector_field: sparse_embedding.embed_documents([keywords[idx]])[0],
                 self.category_field: doc.metadata[self.category_field],
                 self.additional_content_field: doc.metadata[self.additional_content_field],
-                self.filename_field: doc.metadata[self.filename_field]
+                self.filename_field: doc.metadata[self.filename_field],
+                self.last_modified_field: doc.metadata[self.last_modified_field]
             }
             entities.append(entity)
         collection.insert(entities)
