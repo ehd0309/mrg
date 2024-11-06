@@ -5,9 +5,12 @@ from FlagEmbedding import BGEM3FlagModel
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 bge_model = BGEM3FlagModel('BAAI/bge-m3', use_fp16=True, device=0)
-bge_reranker_tokenizer = AutoTokenizer.from_pretrained('BAAI/bge-reranker-v2-m3', device=0)
+bge_reranker_tokenizer = AutoTokenizer.from_pretrained('BAAI/bge-reranker-v2-m3')
 bge_reranker_model = AutoModelForSequenceClassification.from_pretrained('BAAI/bge-reranker-v2-m3')
+bge_reranker_model.to(device)
 
 
 def gen_dense_embedding(sentence):
@@ -39,8 +42,9 @@ def cal_text_pairs_rank(p: List[Tuple[str, str]]) -> List[float]:
     bge_reranker_model.eval()
     with torch.no_grad():
         inputs = bge_reranker_tokenizer(p, return_tensors='pt', padding=True, truncation=True)
+        inputs = {key: value.to(device) for key, value in inputs.items()}
         scores = bge_reranker_model(**inputs, return_dict=True).logits.view(-1, ).float()
-        scores = exp_norm(scores.numpy())
+        scores = exp_norm(scores.cpu().numpy())
     print(np.round(scores * 100, 2))
     return scores
 
