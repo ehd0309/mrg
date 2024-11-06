@@ -13,6 +13,7 @@ class AdvancedDocumentPreprocessorState(TypedDict):
     documents: List[Document]
     text_contents: List[Document]
     table_contents: List[Document]
+    merged_documents: List[Document]
     keywords: list[str]
     step: str
 

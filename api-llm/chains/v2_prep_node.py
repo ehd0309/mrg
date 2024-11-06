@@ -7,7 +7,10 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.documents import Document
 from langchain_experimental.text_splitter import SemanticChunker
 
+from utils.logger import log_execution_time
 
+
+@log_execution_time('RUN_OCR')
 def ocr_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
     index_name = state['index_name']
     ocr_resolver = OCRResolver()
@@ -18,6 +21,7 @@ def ocr_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPrepro
         ocr_resolver=ocr_resolver)
 
 
+@log_execution_time('GENERATE_MARKDOWN')
 def get_markdown_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
     index_name = state['index_name']
     ocr_resolver = state['ocr_resolver']
@@ -47,6 +51,7 @@ def get_markdown_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocum
     )
 
 
+@log_execution_time('EXTRACT_PLAIN_TEXT')
 def text_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
     text_contents = state['text_contents']
     for doc in text_contents:
@@ -58,16 +63,19 @@ def text_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPrepr
     return AdvancedDocumentPreprocessorState(text_contents=text_contents)
 
 
+@log_execution_time('EXTRACT_IMAGE')
 def image_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
     index_name = state['index_name']
     return AdvancedDocumentPreprocessorState(index_name=index_name)
 
 
+@log_execution_time('IMAGE_SAVED(DONE)')
 def save_image_node(state: AdvancedDocumentPreprocessorState):
     index_name = state['index_name']
     return AdvancedDocumentPreprocessorState(index_name=index_name)
 
 
+@log_execution_time('EXTRACT_TABLE')
 def table_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
     table_contents = state['table_contents']
     documents = []
@@ -77,6 +85,7 @@ def table_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPrep
     return AdvancedDocumentPreprocessorState(table_contents=documents)
 
 
+@log_execution_time('TABLE_SUMMARIZATION')
 def table_summary_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
     table_contents = state['table_contents']
     result_table_contents = []
@@ -101,33 +110,42 @@ def table_summary_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocu
     return AdvancedDocumentPreprocessorState(table_contents=result_table_contents)
 
 
+@log_execution_time('MERGE_DOCUMENTS')
 def merge_documents_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
     """Merge all documents"""
     table_contents = state['table_contents']
     text_contents = state['text_contents']
     documents = table_contents + text_contents
-    return AdvancedDocumentPreprocessorState(documents=documents)
+    return AdvancedDocumentPreprocessorState(merged_documents=documents)
 
 
+@log_execution_time('DE-IDENTIFY')
 def de_identify_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
+    print('IDENTIFY_NODE START')
     documents = state['documents']
     di_documents = convert_di_documents(documents)
     return AdvancedDocumentPreprocessorState(documents=di_documents)
 
 
+@log_execution_time('SEMANTIC_CHUNKING')
 def semantic_text_splitter_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
-    text_contents = state['text_contents']
-    spliter = SemanticChunker(TransformersDenseEmbeddings(), min_chunk_size=50)
-    result = spliter.split_documents(text_contents)
-    return AdvancedDocumentPreprocessorState(text_contents=result)
+    documents = state['merged_documents']
+    spliter = SemanticChunker(TransformersDenseEmbeddings(),
+                              breakpoint_threshold_type="gradient",
+                              breakpoint_threshold_amount=90
+                              )
+    result = spliter.split_documents(documents)
+    return AdvancedDocumentPreprocessorState(documents=result)
 
 
+@log_execution_time('EXTRACT_KEYWORDS')
 def gen_keywords_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
     documents = state['documents']
     keywords = extract_keywords(documents)
     return AdvancedDocumentPreprocessorState(keywords=keywords)
 
 
+@log_execution_time('EMBEDDING')
 def embedding_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
     documents = state['documents']
     index_name = state['index_name']

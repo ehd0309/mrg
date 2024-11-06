@@ -12,7 +12,6 @@ class TransformersDenseEmbeddings(Embeddings):
 
     def embed_documents(self, sentences: list) -> List[List[float]]:
         path = self.endpoint + "/api/embed/dense"
-        """여러 문서에 대한 임베딩을 생성합니다."""
         response = requests.post(
             path,
             json={"sentence": sentences}
@@ -23,7 +22,6 @@ class TransformersDenseEmbeddings(Embeddings):
         return result["embeddings"]
 
     def embed_query(self, text: str) -> List[float]:
-        """텍스트에 대한 임베딩을 생성합니다."""
         return self.embed_documents([text])[0]
 
 
@@ -33,7 +31,6 @@ class TransformersSparseEmbeddings(Embeddings):
 
     def embed_documents(self, sentences: list) -> List[List[float]]:
         path = self.endpoint + "/api/embed/sparse"
-        """여러 문서에 대한 임베딩을 생성합니다."""
         response = requests.post(
             path,
             json={"sentence": sentences}
@@ -44,7 +41,6 @@ class TransformersSparseEmbeddings(Embeddings):
         return result["embeddings"]
 
     def embed_query(self, text: str) -> List[float]:
-        """텍스트에 대한 임베딩을 생성합니다."""
         return self.embed_documents([text])[0]
 
 

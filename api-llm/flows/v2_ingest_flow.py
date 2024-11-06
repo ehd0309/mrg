@@ -29,7 +29,7 @@ def init_workflow():
     _workflow.add_node('Merge Document', merge_documents_node)
     _workflow.add_node('가명화', de_identify_node)
     _workflow.add_node('키워드 추출', gen_keywords_node)
-    _workflow.add_node('벡터 임베딩-dense&BM25', embedding_node)
+    _workflow.add_node('vector&bm25 embedding', embedding_node)
 
     _workflow.add_edge(START, 'OCR')
     _workflow.add_edge('OCR', 'Generate Markdown Format')
@@ -43,8 +43,8 @@ def init_workflow():
     _workflow.add_edge('Merge Document', 'Semantic Chunking')
     _workflow.add_edge('Semantic Chunking', '가명화')
     _workflow.add_edge('가명화', '키워드 추출')
-    _workflow.add_edge('키워드 추출', '벡터 임베딩-dense&BM25')
-    _workflow.add_edge('벡터 임베딩-dense&BM25', END)
+    _workflow.add_edge('키워드 추출', 'vector&bm25 embedding')
+    _workflow.add_edge('vector&bm25 embedding', END)
 
     return _workflow.compile()
 

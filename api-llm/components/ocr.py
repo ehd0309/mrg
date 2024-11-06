@@ -37,7 +37,7 @@ class OCRResolver(object):
         return result["md_paths"]
 
     def get_md_result_files(self, index_name: str) -> List[str]:
-        md_files = [str(file) for file in (self._ocr_result_path / index_name).glob("*.md")]
+        md_files = [str(file) for file in (self._ocr_result_path / index_name).glob("**/*.md")]
         return md_files
 
 
