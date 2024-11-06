@@ -7,14 +7,14 @@ from gliner import GLiNER
 
 okt = Okt()
 
-from transformers import AutoTokenizer, AutoModelForTokenClassification, BertModel, pipeline
+from transformers import BertModel
 import gc
 import torch
 
 
 def load_kr_ner():
-    model = GLiNER.from_pretrained("taeminlee/gliner_ko")
-    return model
+    ner_model = GLiNER.from_pretrained("taeminlee/gliner_ko")
+    return ner_model
 
 
 def inference_kr_name(text, model):
@@ -27,27 +27,20 @@ def pseudonymizate_kr_names(sentences: List[str]):
     model = load_kr_ner()
     results = []
     for sentence in sentences:
-        result = inference_kr_name(sentence, model)
+        noun_sentence = noun_text(sentence)
+        result = inference_kr_name(noun_sentence, model)
         results.append(result)
-    deidentify_sentences = sentences.copy()
-    del sentences
     for idx, result in enumerate(results):
         for r in result:
-            if r['score'] < 0.7:
+            if r['score'] < 0.75:
                 continue
             if r['label'] != 'PERSON':
                 continue
-            start_idx = r['start']
-            end_idx = r['end']
-            deidentify_sentences[idx] = (
-                    deidentify_sentences[idx][:start_idx] +
-                    "○" +
-                    deidentify_sentences[idx][end_idx:]
-            )
+            sentences[idx] = sentences[idx].replace(r['text'], r['text'][0] + "○" * (len(r['text']) - 1))
     del results
     del model
     gc.collect()
-    return deidentify_sentences
+    return sentences
 
 
 def noun_extractor(text):
@@ -55,12 +48,12 @@ def noun_extractor(text):
     kiwi = Kiwi()
     result = kiwi.analyze(text)
     for token, pos, _, _ in result[0][0]:
-        if len(token) != 1 and pos.startswith('N') or pos.startswith('SL'):
+        if len(token) != 1 and pos.startswith('N'):
             results.append(token)
     return results
 
 
-def preprocess(text):
+def noun_text(text):
     nouns = noun_extractor(text)
     return ' '.join(nouns)
 
@@ -71,7 +64,7 @@ def split_into_sentences(text):
     keyword_list = []
     for id_num in range(1, len(str_list) + 1):
         str_list[id_num - 1] = str_list[id_num - 1].text
-        keyword_list.append(preprocess(str_list[id_num - 1]))
+        keyword_list.append(noun_text(str_list[id_num - 1]))
     return str_list, keyword_list
 
 
@@ -115,7 +108,8 @@ def generate_morphs(sentences: List[str]):
 
 
 if __name__ == "__main__":
-    text = "너랑 나랑은 지금 안되어요 KtgArgs Transf he 24.155 나를 죽이면 어떻게 될까요 안녕하세요? 형태소 분석기 테스트베드입니다. best matching 4-h1ao abc-he kill "
-    print(" ".join(okt.morphs(text)))
-    result = generate_morphs([text])
-    print(result)
+    sens = ['박동석이 춤을 춘다. 박동석이 미쳐 날뛴다. 김갑환은 발차기를 한다 민선호/민선기/민소현', 'hello world 방사선치료를 받아보자']
+    print(noun_extractor(sens[0]))
+    print(noun_extractor(sens[1]))
+    res = pseudonymizate_kr_names(sens)
+    print(res)
