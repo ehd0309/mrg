@@ -1,6 +1,7 @@
 from typing import Any, List, TypedDict, Annotated
 
 from langchain_core.documents import Document
+from langchain_core.retrievers import BaseRetriever
 
 from components import OCRResolver
 import operator
@@ -44,6 +45,9 @@ class AdvancedRAGGraphState(TypedDict):
     step: str
     chain: Any
     callback: Any
+    retriever: BaseRetriever
+    temperature: float
+    max_tokens: int
 
 
 class BaseRAGGraphState(TypedDict):

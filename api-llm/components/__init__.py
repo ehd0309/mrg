@@ -1,5 +1,5 @@
 from components.llms import LLM
-from components.embeddings import TransformersDenseEmbeddings, TransformersSparseEmbeddings
+from components.embeddings import TransformersDenseEmbeddings, TransformersSparseEmbeddings, TransformerReranker
 from components.ocr import OCRResolver
 from components.vdb import VectorDatabase
 from components.prompt import Prompt

@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Tuple
 
 import requests
 from langchain.embeddings.base import Embeddings
+from langchain.retrievers.document_compressors.cross_encoder import BaseCrossEncoder
 
 from utils import EnvFinder
 
@@ -42,6 +43,21 @@ class TransformersSparseEmbeddings(Embeddings):
 
     def embed_query(self, text: str) -> List[float]:
         return self.embed_documents([text])[0]
+
+
+class TransformerReranker(BaseCrossEncoder):
+
+    def __init__(self, endpoint: str = EnvFinder().get_transformers_url()):
+        self.endpoint = endpoint
+
+    def score(self, text_pairs: List[Tuple[str, str]]) -> List[float]:
+        path = self.endpoint + "/api/embed/ranks"
+        response = requests.post(
+            path,
+            json={"text_pairs": text_pairs}
+        )
+        ranks = response.json()['ranks']
+        return ranks
 
 
 if __name__ == "__main__":
