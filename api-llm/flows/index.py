@@ -14,11 +14,11 @@ def draw_workflow(pre_process_workflow, post_process_workflow, index_name):
         return pre_process_path, post_process_path
 
     output_pre = pre_process_workflow().get_graph(xray=True)
-    with open(pre_process_path, "wb", encoding='utf-8') as f:
+    with open(pre_process_path, "wb") as f:
         f.write(output_pre.draw_mermaid_png())
 
     output_post = post_process_workflow().get_graph(xray=True)
-    with open(post_process_path, "wb", encoding='utf-8') as f:
+    with open(post_process_path, "wb") as f:
         f.write(output_post.draw_mermaid_png())
 
     return pre_process_path, post_process_path
