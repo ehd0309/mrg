@@ -1,5 +1,5 @@
 import { api } from "@/api";
-import { Divider } from "@nextui-org/react";
+import { Button, Divider } from "@nextui-org/react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -39,6 +39,23 @@ const Sidebar = async () => {
             </Link>
           </div>
         ))}
+        <Divider className="bg-default-600 mt-8 mb-4" />
+        <Button
+          startContent={
+            <Image
+              src="/images/pdf.png"
+              width={16}
+              height={16}
+              alt="pdf-image"
+            />
+          }
+          fullWidth
+          color="default"
+          className="bg-black text-white"
+          radius="none"
+        >
+          문서 등록
+        </Button>
       </div>
     </div>
   );

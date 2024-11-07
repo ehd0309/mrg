@@ -1,30 +1,50 @@
 import { LC_BACKEND_URL } from "@/constants";
 import { RagInfo } from "@/type/data";
 
+const isBuildTime = process.env.NEXT_PHASE === "phase-production-build";
+
 export const api = {
   getRagList: async () => {
+    if (isBuildTime) {
+      return [];
+    }
     const { keys } = await fetch(LC_BACKEND_URL + "/api/v0/rags", {
       cache: "no-cache",
     }).then((res) => res.json());
     return keys as string[];
   },
+
   getRagById: async (id: string) => {
+    if (isBuildTime) {
+      return {} as RagInfo;
+    }
     const { info } = await fetch(LC_BACKEND_URL + "/api/v0/rags/" + id, {
       cache: "no-cache",
     }).then((res) => res.json());
     return info as RagInfo;
   },
-  getRagPipelineById: async (id: string, version: 'v1' | 'v2' | 'v3') => {
-    const { pre_process_image, post_process_image } = await fetch(LC_BACKEND_URL + "/api/" + version + "/rags/pipeline/" + id, {
-      cache: 'no-cache',
-    }).then((res) => res.json());
-    return { pre_process_image, post_process_image }
+
+  getRagPipelineById: async (id: string, version: "v1" | "v2" | "v3") => {
+    if (isBuildTime) {
+      return { pre_process_image: null, post_process_image: null };
+    }
+    const { pre_process_image, post_process_image } = await fetch(
+      LC_BACKEND_URL + "/api/" + version + "/rags/pipeline/" + id,
+      {
+        cache: "no-cache",
+      }
+    ).then((res) => res.json());
+    return { pre_process_image, post_process_image };
   },
+
   postRagChat: async (
     id: string,
     question: string,
     version: "v1" | "v2" | "v3"
   ) => {
+    if (isBuildTime) {
+      throw new Error("Chat API cannot be called at build time");
+    }
     const response = await fetch(LC_BACKEND_URL + `/api/${version}/rags/chat`, {
       method: "POST",
       headers: {

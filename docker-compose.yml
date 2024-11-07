@@ -1,7 +1,6 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  
   # OLLAMA API
   ollama-api:
     container_name: pds-ollama
@@ -25,7 +24,6 @@ services:
     networks:
       - park
 
-  
   # OCR API
   ocr-api:
     container_name: pds-ocr
@@ -96,7 +94,19 @@ services:
     volumes:
       - ./api-ocr/assets:/app/assets
     networks:
-      - park      
+      - park
+  chat-app:
+    build:
+      context: ./app-chat
+      dockerfile: Dockerfile
+      args:
+        LANGCHAIN_BACKEND_URL: ${REACT_APP_LLM_API_URL}
+    container_name: pds-chat-app
+    image: pds-chat-app:latest
+    ports:
+      - "10674:3333"
+    networks:
+      - park
 networks:
   park:
     external: true
