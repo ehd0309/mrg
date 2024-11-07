@@ -53,9 +53,6 @@ def init_workflow():
 
 
 if __name__ == '__main__':
-    from IPython.display import Image
-
     output = init_workflow().get_graph(xray=True)
-    image = Image(output.draw_mermaid_png())
-    with open("output_image.png", "wb") as f:
+    with open("pre-output_image.png", "wb") as f:
         f.write(output.draw_mermaid_png())

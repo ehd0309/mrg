@@ -41,3 +41,15 @@ def extract_keywords(docs: List[Document]) -> List[str]:
         raise ValueError(f"Request failed: {response.status_code}, {response.text}")
     extracted_keywords = response.json()
     return extracted_keywords['sentences']
+
+
+def extract_keyword(text: str) -> str:
+    api_path = EnvFinder().get_transformers_url() + '/api/token/keywords'
+    response = requests.post(
+        api_path,
+        json={"sentences": [text]}
+    )
+    if response.status_code != 200:
+        raise ValueError(f"Request failed: {response.status_code}, {response.text}")
+    extracted_keywords = response.json()
+    return extracted_keywords['sentences'][0]

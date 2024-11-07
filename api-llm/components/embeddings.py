@@ -4,6 +4,7 @@ import requests
 from langchain.embeddings.base import Embeddings
 from langchain.retrievers.document_compressors.cross_encoder import BaseCrossEncoder
 
+from components.transformers import extract_keyword
 from utils import EnvFinder
 
 
@@ -42,7 +43,8 @@ class TransformersSparseEmbeddings(Embeddings):
         return result["embeddings"]
 
     def embed_query(self, text: str) -> List[float]:
-        return self.embed_documents([text])[0]
+        keyword_text = extract_keyword(text)
+        return self.embed_documents([keyword_text])[0]
 
 
 class TransformerReranker(BaseCrossEncoder):
@@ -56,7 +58,10 @@ class TransformerReranker(BaseCrossEncoder):
             path,
             json={"text_pairs": text_pairs}
         )
-        ranks = response.json()['ranks']
+        if response.status_code != 200:
+            raise ValueError(f"Request failed: {response.status_code}, {response.text}")
+        json = response.json()
+        ranks = json['ranks']
         return ranks
 
 

@@ -3,4 +3,4 @@ from components.embeddings import TransformersDenseEmbeddings, TransformersSpars
 from components.ocr import OCRResolver
 from components.vdb import VectorDatabase
 from components.prompt import Prompt
-from components.transformers import convert_di_documents, extract_keywords
+from components.transformers import convert_di_documents, extract_keywords, extract_keyword

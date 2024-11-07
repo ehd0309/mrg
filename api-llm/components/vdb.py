@@ -62,13 +62,12 @@ class VectorDatabase(object):
         collection = self.get_collection(collection_name)
         retriever = MilvusCollectionHybridSearchRetriever(
             collection=collection,
-            rerank=WeightedRanker(0.6, 0.4),
+            rerank=WeightedRanker(0.8, 0.2),
             field_embeddings=[dense_embedding, sparse_embedding],
             field_search_params=[dense_param, sparse_param],
             anns_fields=[self.dense_vector_field, self.sparse_vector_field],
             top_k=top_k,
             text_field='text'
-
         )
         return retriever
 
