@@ -8,7 +8,6 @@ from langchain_core.output_parsers import StrOutputParser
 from operator import itemgetter
 from langchain.retrievers import ContextualCompressionRetriever
 from langchain_community.document_transformers import LongContextReorder
-from langchain_core.runnables import RunnableLambda
 
 from utils.logger import log_execution_time
 
@@ -27,9 +26,9 @@ def retrieve_document_node(state: AdvancedRAGGraphState) -> AdvancedRAGGraphStat
         dense_embedding=TransformersDenseEmbeddings(),
         sparse_embedding=TransformersSparseEmbeddings(),
         top_k=20)
-    contexts = retriever.invoke(question)
+    # contexts = retriever.invoke(question)
     return AdvancedRAGGraphState(
-        contexts=contexts,
+        # contexts=contexts,
         retriever=retriever
     )
 
@@ -38,14 +37,12 @@ def retrieve_document_node(state: AdvancedRAGGraphState) -> AdvancedRAGGraphStat
 def rerank_node(state: AdvancedRAGGraphState) -> AdvancedRAGGraphState:
     retriever = state['retriever']
     model = TransformerReranker()
-    compressor = CrossEncoderReranker(model=model, top_n=20)
+    compressor = CrossEncoderReranker(model=model, top_n=10)
     compression_retriever = ContextualCompressionRetriever(
         base_compressor=compressor,
         base_retriever=retriever
     )
-    contexts = compression_retriever.invoke(state['question'])
     return AdvancedRAGGraphState(
-        contexts=contexts,
         retriever=compression_retriever
     )
 
@@ -73,15 +70,14 @@ def filter_node(state: AdvancedRAGGraphState) -> AdvancedRAGGraphState:
     retriever = state['retriever']
     embeddings_filter = EmbeddingsFilter(
         embeddings=TransformersDenseEmbeddings(),
-        similarity_threshold=0.5,
-        k=10
+        similarity_threshold=0.5
     )
     compression_retriever = ContextualCompressionRetriever(
         base_compressor=embeddings_filter, base_retriever=retriever,
     )
-    contexts = compression_retriever.invoke(state['question'])
+    # contexts = compression_retriever.invoke(state['question'])
     return AdvancedRAGGraphState(
-        contexts=contexts,
+        # contexts=contexts,
         retriever=compression_retriever
     )
 
@@ -89,26 +85,33 @@ def filter_node(state: AdvancedRAGGraphState) -> AdvancedRAGGraphState:
 @log_execution_time("CONTEXT_REORDER")
 def reorder_node(state: AdvancedRAGGraphState) -> AdvancedRAGGraphState:
     reordering = LongContextReorder()
-    chain = (
-        {"question": itemgetter('question'),
-         "context": RunnableLambda(
-             lambda void: reordering.transform_documents(state['contexts'])) | format_docs_with_meta}
-    )
-    return AdvancedRAGGraphState(chain=chain)
+    retriever = state['retriever']
+    documents = retriever.invoke(state['question'])
+    formatted_documents = format_docs_with_meta(reordering.transform_documents(documents))
+    return AdvancedRAGGraphState(contexts=formatted_documents)
 
 
 # @log_execution_time("GENERATE_ANSWER")
-async def llm_answer_node(state: AdvancedRAGGraphState) -> dict:
+async def llm_answer_node(state: AdvancedRAGGraphState) -> AdvancedRAGGraphState:
     chain = (
-            state['chain']
+            {"question": itemgetter("question"), "context": itemgetter("context")}
             | Prompt.rag()
-            | LLM().load_local(temp=0.2, streaming=True, frequency_penalty=1.1)
+            | LLM().load_local(
+        temp=0.3,
+        streaming=True,
+        frequency_penalty=1,
+        # top_p=0.95,
+        # top_k=40,
+    )
             | StrOutputParser()
     )
     answer = await chain.ainvoke(
         {"question": state["question"], "context": state["contexts"]}
     )
-
+    print('question:', state['question'])
+    print('contexts:', len(state['contexts']))
+    for context in state['contexts']:
+        print('context:', context)
     return AdvancedRAGGraphState(
         answer=answer,
         question=state["question"],

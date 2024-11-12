@@ -16,13 +16,6 @@ from chains.v2_prep_node import (ocr_node,
 
 
 def init_workflow():
-    # table_builder = StateGraph(AdvancedDocumentPreprocessorState)
-    # table_builder.add_node("Extract Table", table_node)
-    # table_builder.add_node("Summarize Table", table_summary_node)
-    # table_builder.add_edge(START, "Extract Table")
-    # table_builder.add_edge("Extract Table", "Summarize Table")
-    # table_graph = table_builder.compile()
-
     parent_builder = StateGraph(AdvancedDocumentPreprocessorState)
     parent_builder.add_node('OCR', ocr_node)
     parent_builder.add_node('Generate Markdown Format', get_markdown_node)

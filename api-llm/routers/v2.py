@@ -3,6 +3,7 @@ from typing import AsyncGenerator
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
+from langchain_core.outputs.generation import GenerationChunk
 
 from utils import check_history_exists, gen_history
 
@@ -47,10 +48,15 @@ async def invoke_chat(invoke_request: InvokeChatRequest):
                 {"question": invoke_request.question, "index_name": invoke_request.index_name}, version="v2",
                 stream_mode="answer"):
             kind = event["event"]
-            if kind == "on_llm_stream":
-                yield f"{event['data']['chunk']}"
-            if kind == 'on_llm_end':
-                print(event)
+            metadata = event['metadata']
+            if kind == "on_llm_stream" and metadata.get('langgraph_node') == "Generate Answer":
+                chunk = event['data']['chunk']
+                if isinstance(chunk, GenerationChunk):
+                    yield f"{chunk.text}"
+                else:
+                    yield f"{chunk}"
+            # if kind == 'on_llm_end':
+                # print(event)
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
