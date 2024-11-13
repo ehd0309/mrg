@@ -1,0 +1,10 @@
+.env
+node_modules
+dist
+out
+
+# db
+**.sqlite3**
+assets
+
+app-logs
