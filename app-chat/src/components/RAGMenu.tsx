@@ -10,7 +10,6 @@ const RAGMenu = () => {
         key="rags"
         aria-label="rags-a"
         title="RAG-Q&A"
-        subtitle="Q&A 채팅"
         classNames={{
           title: "px-8",
           subtitle: "px-8",

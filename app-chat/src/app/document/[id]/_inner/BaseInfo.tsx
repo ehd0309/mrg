@@ -7,8 +7,9 @@ import {
   useDocumentOutputFile,
   useDocumentRawFile,
 } from "@/hooks/useDocuments";
+import ragService from "@/services/RagServiceImpl";
 import { DocumentStatusEnum } from "@/type/documents";
-import { Progress } from "@nextui-org/react";
+import { Button, Progress } from "@nextui-org/react";
 
 interface BaseInfoProps {
   id: string;
@@ -50,6 +51,23 @@ const BaseInfo = ({ id }: BaseInfoProps) => {
             className="max-w-md"
           />
         </div>
+      )}
+      <br />
+      <br />
+      {document.status === "digitized" && (
+        <Button
+          className="rounded-none bg-black text-white w-[133px]"
+          color="default"
+          onPress={() => {
+            ragService.initRag(
+              document.idxName,
+              document.idxName,
+              document.version
+            );
+          }}
+        >
+          벡터화 저장
+        </Button>
       )}
     </div>
   );
