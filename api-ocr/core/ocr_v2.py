@@ -207,33 +207,54 @@ def det_rec_all(file_path, model_list):
                               ocr_all_pages=True)
 
 
+def split_pdf_to_pages(input_pdf_path, output_folder):
+    """Splits a PDF into separate pages and saves each page as a separate PDF."""
+    with fitz.open(input_pdf_path) as pdf:
+        page_files = []
+        for page_num in range(pdf.page_count):
+            single_page_pdf = fitz.open()  # Create a new PDF for each page
+            single_page_pdf.insert_pdf(pdf, from_page=page_num, to_page=page_num)
+            page_filename = os.path.join(output_folder, f"page_{page_num + 1}.pdf")
+            single_page_pdf.save(page_filename)
+            single_page_pdf.close()
+            page_files.append(page_filename)
+    return page_files
+
+
 def pdf_to_md(index_name, publish_callback, id):
     from marker.output import save_markdown
     _, names = load_input_images(index_name)
     fnames = list(set(names))
     result_mds = []
-    # if len(names) != 1:
-    #     for idx, name in enumerate(names):
-    #         if idx == 0:
-    #             continue
-    #         page_filename = f"{name}_page_{idx}.md"
-    #
-    #         md_path = get_subfolder_path(str(get_output_path() / index_name), page_filename)
-    #         result_mds.append(str(md_path))
-    #     return result_mds
-    pdf_cnt = get_pdf_page_count(get_input_path().resolve() / index_name / (fnames[0] + ".pdf"))
-    publish_callback(json.dumps({"pageNum": pdf_cnt, 'processedPageCount': 0, 'status': 'pending', 'id': id}))
+
+    # Load the models once
     model_list = load_all_models()
+
+    # Process each PDF
     for fname in fnames:
         file_path = get_input_path().resolve() / index_name / (fname + ".pdf")
+        output_folder = get_output_path() / index_name / "pages"
+        os.makedirs(output_folder, exist_ok=True)
 
-        page_outputs = det_rec_all(file_path, model_list)
-        for page_number, (full_text, images, out_meta) in enumerate(page_outputs, start=1):
-            page_filename = f"{fname}_page_{page_number}.md"  # 각 페이지의 파일명 지정
-            result_path = save_markdown(str(get_output_path() / index_name), page_filename, full_text, images, out_meta)
-            print(f"Saved markdown for page {page_number} to {result_path}")
-            result_mds.append(result_path)
-            publish_callback(json.dumps({"pageNum": pdf_cnt, 'processedPageCount': page_number, 'id': id}))
+        # Split PDF into individual pages
+        page_files = split_pdf_to_pages(file_path, output_folder)
+        pdf_cnt = len(page_files)
+        publish_callback(json.dumps({"pageNum": pdf_cnt, 'processedPageCount': 0, 'status': 'pending', 'id': id}))
+
+        # Process each page file
+        for page_number, page_file in enumerate(page_files, start=1):
+            page_outputs = det_rec_all(page_file, model_list)
+
+            # Save the processed output
+            for (full_text, images, out_meta) in page_outputs:
+                page_filename = f"{fname}_page_{page_number}.md"
+                result_path = save_markdown(str(get_output_path() / index_name), page_filename, full_text, images,
+                                            out_meta)
+                print(f"Saved markdown for page {page_number} to {result_path}")
+                result_mds.append(result_path)
+                publish_callback(json.dumps({"pageNum": pdf_cnt, 'processedPageCount': page_number, 'id': id}))
+
+    # Clear loaded models to free memory
     del model_list
     return result_mds
 
