@@ -27,12 +27,16 @@ const config: DBConfig = {
     storage: ":memory",
   },
   production: {
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: "prsapp",
-    host: process.env.DB_HOST,
-    dialect: "postgres",
+    dialect: "sqlite",
+    storage: "database.sqlite3",
   },
+  // production: {
+  //   username: process.env.DB_USERNAME,
+  //   password: process.env.DB_PASSWORD,
+  //   database: "prsapp",
+  //   host: process.env.DB_HOST,
+  //   dialect: "postgres",
+  // },
 };
 
 export default config;

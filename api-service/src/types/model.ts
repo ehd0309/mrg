@@ -28,6 +28,7 @@ export interface DocumentEntity {
 
 export interface RagEntity {
   version: string;
+  name: string;
   documents: DocumentEntity[];
   prepareProcessArchtecture?: string;
   retrieveProcessArchtecture?: string;

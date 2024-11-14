@@ -4,6 +4,7 @@ import {
   AllowNull,
   Column,
   DataType,
+  Default,
   Is,
   Length,
   Model,
@@ -41,6 +42,11 @@ export class Rag extends Model<RagEntity> {
     DocumentEntity & BaseEntity,
     "id" | "idxName" | "documentName" | "version"
   >[];
+
+  @AllowNull(false)
+  @Default("rag")
+  @Column(DataType.STRING)
+  declare name: string;
 
   @AllowNull(false)
   @Is({

@@ -1,5 +1,6 @@
 import { Document } from "@/models/document.model";
 import { DocumentRepository } from "@/repositories/document.repo";
+import { RagRepository } from "@/repositories/rag.repo";
 import { redisInstance } from "@/services/redis.service";
 import { SSEModule } from "@/services/sse.module";
 import { RedisChannel } from "@/types/redis";
@@ -15,11 +16,17 @@ import { NotFoundError } from "routing-controllers";
 
 export class DocumentService {
   private documentRepository: DocumentRepository;
+  private ragRepository: RagRepository;
   private sseModule: SSEModule;
   private redisService = redisInstance();
 
-  constructor(documentRepository: DocumentRepository, sseModule: SSEModule) {
+  constructor(
+    documentRepository: DocumentRepository,
+    ragRepository: RagRepository,
+    sseModule: SSEModule
+  ) {
     this.documentRepository = documentRepository;
+    this.ragRepository = ragRepository;
     this.sseModule = sseModule;
     this.redisService.subscribe(RedisChannel.USER_OCR, async (msg) => {
       if (!msg) {
@@ -38,16 +45,23 @@ export class DocumentService {
       response?.processedPageCount &&
         document.set("processedPageCount", response.processedPageCount);
       await this.documentRepository.updateDocument(document);
-      this.sseModule.emitSSEEvent(
-        SSEChannel.DOCUMENT,
-        JSON.stringify({ id: document.id })
-      );
       if (response?.status === "digitized") {
         this.redisService.publish(
           RedisChannel.LANGCHAIN_EMBED,
           JSON.stringify({ ...document.dataValues })
         );
       }
+      // if (response?.status === "embedded") {
+      //   await this.ragRepository.createRag({
+      //     documents: [{ ...document }],
+      //     name: (response as any)?.name || "rag",
+      //     version: document.version,
+      //   });
+      // }
+      this.sseModule.emitSSEEvent(
+        SSEChannel.DOCUMENT,
+        JSON.stringify({ id: document.id })
+      );
     });
   }
 
