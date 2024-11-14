@@ -11,7 +11,7 @@ import {
 } from "sequelize-typescript";
 
 @Table({
-  tableName: "rags",
+  tableName: "rag",
   underscored: true,
 })
 export class Rag extends Model<RagEntity> {

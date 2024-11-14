@@ -1,3 +1,13 @@
+export type DocumentStatus =
+  | "default"
+  | "uploaded"
+  | "pending"
+  | "digitized"
+  | "embedded"
+  | "error";
+
+export type RetrieveStatus = "pending" | "completed" | "error";
+
 export interface BaseEntity {
   id: string;
   createdAt?: Date;
@@ -11,7 +21,7 @@ export interface DocumentEntity {
   ocrPath?: string;
   version: string;
   pageNum: number;
-  status: "default" | "uploaded" | "digitized";
+  status: DocumentStatus;
   processedPageCount: number;
   description?: string;
 }
@@ -31,5 +41,5 @@ export interface RetrieveEntity {
   question?: string;
   answer?: string;
   retrievedDocuments?: string;
-  status: "pending" | "completed" | "failed";
+  status: RetrieveStatus;
 }

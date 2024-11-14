@@ -11,8 +11,8 @@ import { controllers, container } from "@/controllers";
 import { ErrorHandler } from "@/middlewares/errorHandler";
 import { logger } from "@/logger";
 
-import sequelize from "./models";
 import { redisInstance } from "@/services/redis.service";
+import sequelize from "@/models";
 
 const PORT = 4000;
 

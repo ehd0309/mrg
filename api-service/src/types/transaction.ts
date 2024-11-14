@@ -1,7 +1,7 @@
 import { DocumentEntity, RagEntity, RetrieveEntity } from "@/types/model";
 
 export interface CreateDocument
-  extends Omit<DocumentEntity, "id" | "status" | "processedPageCount"> {}
+  extends Omit<DocumentEntity, "id" | "processedPageCount"> {}
 
 export interface CreateRag
   extends Omit<

@@ -1,17 +1,15 @@
-import { DocumentEntity, RetrieveEntity } from "@/types/model";
+import { RetrieveEntity, type RetrieveStatus } from "@/types/model";
 import {
   AllowNull,
   Column,
   DataType,
   Default,
-  Is,
-  Length,
   Model,
   Table,
 } from "sequelize-typescript";
 
 @Table({
-  tableName: "retrieves",
+  tableName: "retrieve",
   underscored: true,
 })
 export class Retrieve extends Model<RetrieveEntity> {
@@ -43,5 +41,5 @@ export class Retrieve extends Model<RetrieveEntity> {
   @AllowNull(false)
   @Default("pending")
   @Column(DataType.STRING)
-  declare status: "pending" | "completed" | "failed";
+  declare status: RetrieveStatus;
 }

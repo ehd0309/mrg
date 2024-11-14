@@ -1,4 +1,4 @@
-import { DocumentEntity } from "@/types/model";
+import type { DocumentEntity, DocumentStatus } from "@/types/model";
 import {
   AllowNull,
   Column,
@@ -12,7 +12,7 @@ import {
 } from "sequelize-typescript";
 
 @Table({
-  tableName: "documents",
+  tableName: "document",
   underscored: true,
 })
 export class Document extends Model<DocumentEntity> {
@@ -52,7 +52,7 @@ export class Document extends Model<DocumentEntity> {
   @AllowNull(false)
   @Default("default")
   @Column(DataType.STRING)
-  declare status: "default" | "uploaded" | "digitized";
+  declare status: DocumentStatus;
 
   @AllowNull(false)
   @Default(0)

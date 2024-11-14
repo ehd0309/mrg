@@ -14,8 +14,10 @@ export class DocumentRepository {
     return await this.documentRepository.findAll();
   }
 
-  async getDocumentById(id: number) {
-    return await this.documentRepository.findByPk(id);
+  async getDocumentById(id: string) {
+    return await this.documentRepository.findByPk(Number(id), {
+      raw: false,
+    });
   }
 
   async getDocumentByName(documentName: string) {
@@ -26,5 +28,18 @@ export class DocumentRepository {
 
   async createDocument(document: CreateDocument) {
     return await this.documentRepository.create(document as Document);
+  }
+
+  async updateDocument(document: Document) {
+    const [_, affected] = await (this.documentRepository as any).update(
+      { ...document.dataValues, updatedAt: new Date() },
+      {
+        where: {
+          id: document.id,
+        },
+        returning: ["id", "updatedAt"],
+      }
+    );
+    return affected?.[0];
   }
 }
