@@ -13,6 +13,6 @@ RUN pnpm install
 
 RUN pnpm build
 
-ENV PORT 8000
+ENV PORT 4000
 
 CMD ["pnpm", "start"]
