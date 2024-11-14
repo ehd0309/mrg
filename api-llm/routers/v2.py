@@ -5,12 +5,16 @@ from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
 from langchain_core.outputs.generation import GenerationChunk
 
-from utils import check_history_exists, gen_history
+import json
+
+from utils.pubsub import RedisPubSub, channels
 
 router = APIRouter(
     prefix="/api/v2",
     tags=["v2"]
 )
+
+redis = RedisPubSub()
 
 
 class GenerateRequest(BaseModel):
@@ -27,14 +31,14 @@ class InvokeChatRequest(BaseModel):
 async def generate(generate_request: GenerateRequest):
     index_name = generate_request.index_name
     file_name = generate_request.file_name
-    if check_history_exists(index_name):
-        return HTTPException(status_code=400, detail="already exists")
     from flows.v2_ingest_flow import init_workflow
     ingest = init_workflow()
-    result = ingest.invoke({"index_name": index_name})
-    gen_history(index_name,
-                {"file_name": file_name, "ocr_result_paths": result.get("ocr_result_paths"), "step": result.get("step"),
-                 "version": "v2"})
+    ingest.invoke({"index_name": index_name})
+    redis.publish(channels.get('document'), json.dumps({
+        "status": "embedded",
+        "idxName": index_name,
+        'name': file_name,
+    }))
     return {'message': index_name + ' was ingested successfully', 'index_name': index_name}
 
 
@@ -55,8 +59,8 @@ async def invoke_chat(invoke_request: InvokeChatRequest):
                     yield f"{chunk.text}"
                 else:
                     yield f"{chunk}"
-            # if kind == 'on_llm_end':
-                # print(event)
+            if kind == 'on_llm_end' and metadata.get('langgraph_node') == "Generate Answer":
+                print(event)
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 

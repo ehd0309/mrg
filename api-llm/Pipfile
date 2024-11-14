@@ -23,6 +23,7 @@ uvicorn = "*"
 websockets = "*"
 fastapi = "*"
 langchain-experimental = "*"
+redis = "*"
 
 [dev-packages]
 

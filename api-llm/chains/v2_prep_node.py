@@ -14,10 +14,10 @@ from utils.logger import log_execution_time
 def ocr_node(state: AdvancedDocumentPreprocessorState) -> AdvancedDocumentPreprocessorState:
     index_name = state['index_name']
     ocr_resolver = OCRResolver()
-    result_md_paths = ocr_resolver.gen_md_from_pdf_v2(index_name=index_name)
+    # result_md_paths = ocr_resolver.gen_md_from_pdf_v2(index_name=index_name)
     return AdvancedDocumentPreprocessorState(
         step='IN-PROGRESS',
-        ocr_result_paths=result_md_paths,
+        ocr_result_paths=[],
         ocr_resolver=ocr_resolver)
 
 

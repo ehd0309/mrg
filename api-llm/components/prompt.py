@@ -54,9 +54,9 @@ class Prompt(object):
     @staticmethod
     def table_summary():
         sys = """
-        You are an assistant tasked with summarizing tables and text for retrieval.
-        These summaries will be embedded and used to retrieve the raw text or table elements.
-        Give a concise summary of the html table that is well optimized for retrieval.
+        주어지는 HTML 태그 구조로 이루어진 테이블의 요약을 작성해주세요.
+        검색에 효과적일 수 있도록 적절한 수준으로 요약해주세요.
+        의학적 용어 및 수치는 최대한 보존해주세요.
         """
         human = """
         #Table:
