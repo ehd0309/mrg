@@ -27,9 +27,14 @@ export default function RootLayout({
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
           <Header />
-          <div className="flex flex-start items-start w-full h-[calc(100vh - 52px)]">
+          <div
+            className="grid justify-start items-start w-full h-[calc(100vh - 52px)]"
+            style={{
+              gridTemplateColumns: "300px 1fr",
+            }}
+          >
             <Sidebar />
-            <div className="flex-1 h-full">{children}</div>
+            <div className="h-full">{children}</div>
           </div>
         </Providers>
       </body>

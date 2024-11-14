@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  redis1:
+    image: redis:latest
+    container_name: redis1
+    ports:
+      - "10686:6333"
+    command:
+      [
+        "redis-server",
+        "--port",
+        "6333",
+        "--maxmemory",
+        "128mb",
+        "--maxmemory-policy",
+        "allkeys-lru",
+      ]
