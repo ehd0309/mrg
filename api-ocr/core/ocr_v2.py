@@ -212,16 +212,15 @@ def pdf_to_md(index_name, publish_callback, id):
     _, names = load_input_images(index_name)
     fnames = list(set(names))
     result_mds = []
-    if len(names) != 1:
-        for idx, name in enumerate(names):
-            if idx == 0:
-                continue
-            page_filename = f"{name}_page_{idx}.md"
-
-            md_path = get_subfolder_path(str(get_output_path() / index_name), page_filename)
-            result_mds.append(str(md_path))
-        return result_mds
-
+    # if len(names) != 1:
+    #     for idx, name in enumerate(names):
+    #         if idx == 0:
+    #             continue
+    #         page_filename = f"{name}_page_{idx}.md"
+    #
+    #         md_path = get_subfolder_path(str(get_output_path() / index_name), page_filename)
+    #         result_mds.append(str(md_path))
+    #     return result_mds
     pdf_cnt = get_pdf_page_count(get_input_path().resolve() / index_name / (fnames[0] + ".pdf"))
     publish_callback(json.dumps({"pageNum": pdf_cnt, 'processedPageCount': 0, 'status': 'pending', 'id': id}))
     model_list = load_all_models()
