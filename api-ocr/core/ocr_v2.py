@@ -144,8 +144,8 @@ def convert_single_pdf(
     annotate_block_types(pages)
 
     # Sort from reading order
-    surya_order(lowres_images, pages, order_model, batch_multiplier=batch_multiplier)
-    sort_blocks_in_reading_order(pages)
+    # surya_order(lowres_images, pages, order_model, batch_multiplier=batch_multiplier)
+    # sort_blocks_in_reading_order(pages)
 
     # Dump debug data if flags are set
     draw_page_debug_images(fname, pages)
