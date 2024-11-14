@@ -18,6 +18,7 @@ EXTENSIONS = ['.pdf', '.jpg', '.png']
 
 def load_input_images(index):
     from surya.input.load import load_from_folder
+    print(INPUT_PATH, index)
     igs, texts, _ = load_from_folder(INPUT_PATH / index)
     return igs, texts
 
@@ -55,6 +56,7 @@ def gen_md_from_text_pdf(file_path: str):
 
 
 if __name__ == '__main__':
-    images, names = load_input_images('연세')
-    print(images)
-    print(names)
+    print(get_output_path())
+    # images, names = load_input_images('연세')
+    # print(images)
+    # print(names)

@@ -3,11 +3,14 @@ from flask_cors import CORS
 
 from dotenv import load_dotenv
 from core import pdf_to_md, pdf_to_md_v2
+from pubsub import RedisPubSub
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+redis = RedisPubSub()
+redis.subscribe_document()
 
 
 @app.route("/")

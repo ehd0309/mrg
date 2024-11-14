@@ -1,12 +1,15 @@
 from marker.models import load_all_models
 from utils.index import load_input_images, get_input_path, get_output_path
 from marker.pdf.images import render_image
+from marker.output import get_subfolder_path
 
 import warnings
 from marker.schema.page import Page
 
 import pypdfium2 as pdfium  # Needs to be at the top to avoid warnings
 from PIL import Image
+import fitz
+import json
 
 from marker.utils import flush_cuda_memory
 from marker.tables.table import format_tables
@@ -74,7 +77,7 @@ def convert_single_pdf(
         langs: Optional[List[str]] = None,
         batch_multiplier: int = 1,
         ocr_all_pages: bool = False
-) -> Tuple[str, Dict[str, Image.Image], Dict]:
+) -> List[Tuple[str, Dict[str, Image.Image], Dict]]:
     ocr_all_pages = ocr_all_pages or settings.OCR_ALL_PAGES
 
     if metadata:
@@ -93,7 +96,7 @@ def convert_single_pdf(
     }
 
     if filetype == "other":  # We can't process this file
-        return "", {}, out_meta
+        return []
 
     # Get initial text blocks from the pdf
     doc = pdfium.PdfDocument(fname)
@@ -129,7 +132,7 @@ def convert_single_pdf(
     out_meta["ocr_stats"] = ocr_stats
     if len([b for p in pages for b in p.blocks]) == 0:
         print(f"Could not extract any text blocks for {fname}")
-        return "", {}, out_meta
+        return []
 
     surya_layout(lowres_images, pages, layout_model, batch_multiplier=batch_multiplier)
 
@@ -157,17 +160,8 @@ def convert_single_pdf(
     table_count = format_tables(pages, doc, fname, detection_model, table_rec_model, ocr_model)
     out_meta["block_stats"]["table"] = table_count
 
-    for page in pages:
-        for block in page.blocks:
-            block.filter_spans(bad_span_ids)
-            block.filter_bad_span_types()
-
-    filtered, eq_stats = replace_equations(
-        doc,
-        pages,
-        texify_model,
-        batch_multiplier=batch_multiplier
-    )
+    # Replace equations
+    filtered, eq_stats = replace_equations(doc, pages, texify_model, batch_multiplier=batch_multiplier)
     flush_cuda_memory()
     out_meta["block_stats"]["equations"] = eq_stats
 
@@ -180,24 +174,31 @@ def convert_single_pdf(
     infer_heading_levels(pages)
     find_bold_italic(pages)
 
-    # Use headers to compute a table of contents
+    # Compute table of contents
     out_meta["computed_toc"] = compute_toc(pages)
 
-    # Copy to avoid changing original data
-    merged_lines = merge_spans(filtered)
-    text_blocks = merge_lines(merged_lines)
-    text_blocks = filter_common_titles(text_blocks)
-    full_text = get_full_text(text_blocks)
+    # Process each page independently
+    page_outputs = []
+    for i, page in enumerate(pages):
+        page_meta = out_meta.copy()
+        page_meta['page_number'] = i + 1  # 페이지 번호 추가
 
-    # Handle empty blocks being joined
-    full_text = cleanup_text(full_text)
+        # Copy to avoid changing original data
+        merged_lines = merge_spans([page])
+        text_blocks = merge_lines(merged_lines)
+        text_blocks = filter_common_titles(text_blocks)
+        full_text = get_full_text(text_blocks)
 
-    # Replace bullet characters with a -
-    full_text = replace_bullets(full_text)
+        # Cleanup text
+        full_text = cleanup_text(full_text)
+        full_text = replace_bullets(full_text)
 
-    doc_images = images_to_dict(pages)
+        # Extract images for each page
+        doc_images = images_to_dict([page])
 
-    return full_text, doc_images, out_meta
+        page_outputs.append((full_text, doc_images, page_meta))
+
+    return page_outputs
 
 
 def det_rec_all(file_path, model_list):
@@ -206,24 +207,41 @@ def det_rec_all(file_path, model_list):
                               ocr_all_pages=True)
 
 
-def pdf_to_md(index_name):
+def pdf_to_md(index_name, publish_callback, id):
     from marker.output import save_markdown
-    model_list = load_all_models()
     _, names = load_input_images(index_name)
     fnames = list(set(names))
     result_mds = []
+    if len(names) != 1:
+        for idx, name in enumerate(names):
+            if idx == 0:
+                continue
+            page_filename = f"{name}_page_{idx}.md"
+
+            md_path = get_subfolder_path(str(get_output_path() / index_name), page_filename)
+            result_mds.append(str(md_path))
+        return result_mds
+
+    pdf_cnt = get_pdf_page_count(get_input_path().resolve() / index_name / (fnames[0] + ".pdf"))
+    publish_callback(json.dumps({"pageNum": pdf_cnt, 'processedPageCount': 0, 'status': 'pending', 'id': id}))
+    model_list = load_all_models()
     for fname in fnames:
         file_path = get_input_path().resolve() / index_name / (fname + ".pdf")
-        full_text, images, out_meta = det_rec_all(file_path, model_list)
-        result_path = save_markdown(str(get_output_path() / index_name), fname + '.md', full_text, images, out_meta)
-        print(f"Saved markdown to the {result_path} folder")
-        result_mds.append(result_path)
-        del result_path
-        del full_text
-        del images
-        del out_meta
+
+        page_outputs = det_rec_all(file_path, model_list)
+        for page_number, (full_text, images, out_meta) in enumerate(page_outputs, start=1):
+            page_filename = f"{fname}_page_{page_number}.md"  # 각 페이지의 파일명 지정
+            result_path = save_markdown(str(get_output_path() / index_name), page_filename, full_text, images, out_meta)
+            print(f"Saved markdown for page {page_number} to {result_path}")
+            result_mds.append(result_path)
+            publish_callback(json.dumps({"pageNum": pdf_cnt, 'processedPageCount': page_number, 'id': id}))
     del model_list
     return result_mds
+
+
+def get_pdf_page_count(file_path):
+    with fitz.open(file_path) as pdf:
+        return pdf.page_count
 
 
 if __name__ == "__main__":
