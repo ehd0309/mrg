@@ -5,7 +5,9 @@ import JSZip from "jszip";
 
 class DocumentService extends Service {
   getList = async () => {
-    return this.http.get<DocumentType[]>("/api/documents");
+    return this.http.get<DocumentType[]>("/api/documents", {
+      cache: "no-cache",
+    });
   };
   upload = ({
     document,
