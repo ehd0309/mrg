@@ -40,7 +40,7 @@ export const useRag = (id: string) => {
 
 useRag.prefetch = async (id: string) => {
   const { state, queryClient } = await getDehydratedQuery(DOCUMENT_OPTION(id));
-  const dataRequest = getDehydratedQueryResult<DocumentType>({
+  const dataRequest = getDehydratedQueryResult<RagType>({
     queryKey: DOCUMENT_OPTION(id).queryKey,
     queryClient,
   });

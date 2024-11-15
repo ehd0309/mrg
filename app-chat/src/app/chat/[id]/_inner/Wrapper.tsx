@@ -81,7 +81,7 @@ const Wrapper = ({ id }: WrapperProps) => {
 
   return (
     <>
-      <PageTitle title={"TITLE"} />
+      <PageTitle title={document?.name ?? "TITLE"} />
       <div className="flex w-full flex-col">
         <Tabs color="primary" aria-label="Options">
           <Tab key="chat" title="CHAT">

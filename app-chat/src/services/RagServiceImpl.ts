@@ -8,7 +8,7 @@ class RagService extends Service {
     return this.http.get<RagType[]>("/api/rags");
   };
   getById = (id: string) => {
-    return this.http.get<DocumentType>(`/api/rags/${id}`);
+    return this.http.get<RagType>(`/api/rags/${id}`);
   };
   initRag = (index_name: string, file_name: string, version: string) => {
     return fetch(LC_BACKEND_URL + `/api/${version}/rags`, {

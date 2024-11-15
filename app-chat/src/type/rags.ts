@@ -8,4 +8,5 @@ export interface RagType {
   retrieveProcessArchtecture?: string;
   description?: string;
   version: "v1" | "v2" | "v3";
+  idxName: string;
 }
