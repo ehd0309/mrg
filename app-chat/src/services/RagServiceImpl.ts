@@ -5,10 +5,10 @@ import { RagType } from "@/type/rags";
 
 class RagService extends Service {
   getList = async () => {
-    return this.http.get<RagType[]>("/api/rags");
+    return this.http.get<RagType[]>("/api/rags", { cache: "no-cache" });
   };
   getById = (id: string) => {
-    return this.http.get<RagType>(`/api/rags/${id}`);
+    return this.http.get<RagType>(`/api/rags/${id}`, { cache: "no-cache" });
   };
   initRag = (index_name: string, file_name: string, version: string) => {
     return fetch(LC_BACKEND_URL + `/api/${version}/rags`, {
@@ -16,6 +16,7 @@ class RagService extends Service {
       headers: {
         "Content-Type": "application/json",
       },
+      cache: "no-cache",
       body: JSON.stringify({ index_name, file_name }),
     });
   };
@@ -33,6 +34,7 @@ class RagService extends Service {
         headers: {
           "Content-Type": "application/json",
         },
+        cache: "no-cache",
       }
     ) as Promise<any>;
   };

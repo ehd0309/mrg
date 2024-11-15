@@ -21,16 +21,20 @@ class DocumentService extends Service {
     return fetch(`${this.baseURL}/api/documents`, {
       method: "POST",
       body: formData,
+      cache: "no-cache",
     }).then((res) => res.json()) as Promise<
       Pick<DocumentType, "id" | "idxName" | "version">
     >;
   };
   getDocument = (id: string) => {
-    return this.http.get<DocumentType>(`/api/documents/${id}`);
+    return this.http.get<DocumentType>(`/api/documents/${id}`, {
+      cache: "no-cache",
+    });
   };
   getRawFile = async (id: string) => {
     const response = await fetch(
-      `${this.baseURL}/api/documents/${id}/file/raw`
+      `${this.baseURL}/api/documents/${id}/file/raw`,
+      { cache: "no-cache" }
     );
     const blob = await response.blob();
     const zip = await JSZip.loadAsync(blob);
@@ -46,7 +50,8 @@ class DocumentService extends Service {
 
   getOCRFile = async (id: string) => {
     const response = await fetch(
-      `${this.baseURL}/api/documents/${id}/file/output`
+      `${this.baseURL}/api/documents/${id}/file/output`,
+      { cache: "no-cache" }
     );
     const blob = await response.blob();
     const zip = await JSZip.loadAsync(blob);
