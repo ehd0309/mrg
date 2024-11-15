@@ -58,12 +58,10 @@ const BaseInfo = ({ id }: BaseInfoProps) => {
         <Button
           className="rounded-none bg-black text-white w-[133px]"
           color="default"
-          onPress={() => {
-            ragService.initRag(
-              document.idxName,
-              document.idxName,
-              document.version
-            );
+          onPress={async () => {
+            await ragService
+              .initRag(document.idxName, document.idxName, document.version)
+              .catch((e) => alert("에러!"));
           }}
         >
           벡터화 저장

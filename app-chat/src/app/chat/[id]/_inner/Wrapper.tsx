@@ -6,13 +6,15 @@ import { Tabs, Tab, Card, CardBody } from "@nextui-org/react";
 import { ChatMessage } from "@/type/chat";
 import { api } from "@/api";
 import Pipeline from "./Pipeline";
+import PageTitle from "@/components/PageTitle";
+import { useRag } from "@/hooks/useRag";
 
 interface WrapperProps {
   id: string;
-  version: "v1" | "v2" | "v3";
 }
 
-const Wrapper = ({ id, version }: WrapperProps) => {
+const Wrapper = ({ id }: WrapperProps) => {
+  const { document } = useRag(id);
   const cardClasses = "min-h-[calc(100vh-18rem)]";
 
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
@@ -30,12 +32,13 @@ const Wrapper = ({ id, version }: WrapperProps) => {
   const [postImage, setPostImage] = useState(null);
 
   useEffect(() => {
-      (async () => {
-          const { post_process_image, pre_process_image } = await api.getRagPipelineById(id, version);
-          setPostImage(post_process_image);
-          setPreImage(pre_process_image);
-      })();
-  } ,[id, version])
+    (async () => {
+      const { post_process_image, pre_process_image } =
+        await api.getRagPipelineById(document.idxName, document.version);
+      setPostImage(post_process_image);
+      setPreImage(pre_process_image);
+    })();
+  }, [id]);
 
   const handleSendChat = async () => {
     setCurrentQuery("");
@@ -48,7 +51,11 @@ const Wrapper = ({ id, version }: WrapperProps) => {
       },
     ]);
 
-    const { decoder, reader } = await api.postRagChat(id, currentQuery, version);
+    const { decoder, reader } = await api.postRagChat(
+      document.idxName,
+      currentQuery,
+      document.version
+    );
     setIsGenerating(true);
     let finalMessage = "";
     while (true) {
@@ -73,43 +80,49 @@ const Wrapper = ({ id, version }: WrapperProps) => {
   };
 
   return (
-    <div className="flex w-full flex-col">
-      <Tabs color="primary" aria-label="Options">
-        <Tab key="chat" title="CHAT">
-          <Card className={`${cardClasses} border-none shadow-none`}>
-            <CardBody className="flex flex-col justify-between relative">
-              <Chat
-                id={id}
-                version={version}
-                chatHistory={chatHistory}
-                currentQuery={currentQuery}
-                currentChat={currentChat}
-                isGenerating={isGenerating}
-                setCurrentQuery={setCurrentQuery}
-                handleSendChat={handleSendChat}
-              />
-            </CardBody>
-          </Card>
-        </Tab>
-        <Tab key="ocr" title="OCR">
-          <Card className={cardClasses}>
-            <CardBody>
-              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-              reprehenderit in voluptate velit esse cillum dolore eu fugiat
-              nulla pariatur.
-            </CardBody>
-          </Card>
-        </Tab>
-        <Tab key="graph" title="GRAPH">
-        <Card className={`${cardClasses} border-none shadow-none`}>
-        <CardBody>
-             <Pipeline pre_process_image={preImage} post_process_image={postImage} />
-            </CardBody>
-          </Card>
-        </Tab>
-      </Tabs>
-    </div>
+    <>
+      <PageTitle title={"TITLE"} />
+      <div className="flex w-full flex-col">
+        <Tabs color="primary" aria-label="Options">
+          <Tab key="chat" title="CHAT">
+            <Card className={`${cardClasses} border-none shadow-none`}>
+              <CardBody className="flex flex-col justify-between relative">
+                <Chat
+                  id={id}
+                  version={document.version}
+                  chatHistory={chatHistory}
+                  currentQuery={currentQuery}
+                  currentChat={currentChat}
+                  isGenerating={isGenerating}
+                  setCurrentQuery={setCurrentQuery}
+                  handleSendChat={handleSendChat}
+                />
+              </CardBody>
+            </Card>
+          </Tab>
+          <Tab key="ocr" title="OCR">
+            <Card className={cardClasses}>
+              <CardBody>
+                Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+                dolor in reprehenderit in voluptate velit esse cillum dolore eu
+                fugiat nulla pariatur.
+              </CardBody>
+            </Card>
+          </Tab>
+          <Tab key="graph" title="GRAPH">
+            <Card className={`${cardClasses} border-none shadow-none`}>
+              <CardBody>
+                <Pipeline
+                  pre_process_image={preImage}
+                  post_process_image={postImage}
+                />
+              </CardBody>
+            </Card>
+          </Tab>
+        </Tabs>
+      </div>
+    </>
   );
 };
 

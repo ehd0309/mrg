@@ -1,9 +1,11 @@
 import { DocumentController } from "@/controllers/document.controller";
+import { RagController } from "@/controllers/rag.controller";
 import { SSEController } from "@/controllers/sse.controller";
 import { DocumentRepository } from "@/repositories/document.repo";
 import { RagRepository } from "@/repositories/rag.repo";
 import { RetrieveRepository } from "@/repositories/retrieve.repo";
 import { DocumentService } from "@/services/document.service";
+import { RagService } from "@/services/rag.service";
 import { RedisService } from "@/services/redis.service";
 import { SSEModule } from "@/services/sse.module";
 import { Container } from "typedi";
@@ -24,6 +26,7 @@ Container.set(
     Container.get(SSEModule)
   )
 );
+Container.set(RagService, new RagService(Container.get(RagRepository)));
 
 Container.set(SSEController, new SSEController(Container.get(SSEModule)));
 Container.set(
@@ -31,4 +34,6 @@ Container.set(
   new DocumentController(Container.get(DocumentService))
 );
 
-export const controllers = [DocumentController, SSEController];
+Container.set(RagController, new RagController(Container.get(RagService)));
+
+export const controllers = [DocumentController, RagController, SSEController];

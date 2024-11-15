@@ -22,26 +22,11 @@ export class Rag extends Model<RagEntity> {
     get(this) {
       return JSON.parse(this.getDataValue("documents"));
     },
-    set(
-      this,
-      val: Pick<
-        DocumentEntity & BaseEntity,
-        "id" | "idxName" | "documentName" | "version"
-      >
-    ) {
-      if (!val.id || !val.idxName || !val.documentName || !val.version) {
-        throw new BadRequestError("id, idxName, documentName, version 필수");
-      }
-      this.setDataValue(
-        "documents",
-        JSON.stringify([...JSON.parse(this.getDataValue("documents")), val])
-      );
+    set(this, val: (DocumentEntity & BaseEntity)[]) {
+      this.setDataValue("documents", JSON.stringify([...val]));
     },
   })
-  declare documents: Pick<
-    DocumentEntity & BaseEntity,
-    "id" | "idxName" | "documentName" | "version"
-  >[];
+  declare documents: (DocumentEntity & BaseEntity)[];
 
   @AllowNull(false)
   @Default("rag")

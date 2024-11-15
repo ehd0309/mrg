@@ -1,6 +1,7 @@
 import { DocumentType } from "@/type/documents";
 
 export interface RagType {
+  id: number;
   name: string;
   documents: DocumentType[];
   prepareProcessArchtecture?: string;

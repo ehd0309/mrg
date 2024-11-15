@@ -5,4 +5,8 @@ export const queryKeys = {
     inputFile: (id: string) => ["input-file", "documents", id],
     outputFile: (id: string) => ["output-file", "documents", id],
   },
+  rag: {
+    list: () => ["rag"],
+    byId: (id: string) => ["rag", id],
+  },
 };

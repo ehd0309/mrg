@@ -1,8 +1,9 @@
 import { api } from "@/api";
 import Wrapper from "@/app/chat/[id]/_inner/Wrapper";
+import Hydrate from "@/components/Hydrate";
 import PageLayout from "@/components/PageLayout";
-import PageTitle from "@/components/PageTitle";
-import { notFound } from "next/navigation";
+import { useDocumentList } from "@/hooks/useDocuments";
+import { useRag } from "@/hooks/useRag";
 
 interface ChatPageProps {
   params: {
@@ -11,15 +12,22 @@ interface ChatPageProps {
 }
 
 const ChatPage = async ({ params: { id } }: ChatPageProps) => {
-  const info = await api.getRagById(id);
-  if (!info || !info?.file_name) {
-    notFound();
-  }
+  const prefetch = async () => {
+    const { state } = await useRag.prefetch(id);
+    return { state };
+  };
+  const prefetchDocuments = async () => {
+    const { state } = await useDocumentList.prefetch();
+    return { state };
+  };
   return (
-    <PageLayout>
-      <PageTitle title={info.file_name} />
-      <Wrapper id={id} version={info.version} />
-    </PageLayout>
+    <Hydrate prefetch={prefetchDocuments}>
+      <Hydrate prefetch={prefetch}>
+        <PageLayout>
+          <Wrapper id={id} />
+        </PageLayout>
+      </Hydrate>
+    </Hydrate>
   );
 };
 

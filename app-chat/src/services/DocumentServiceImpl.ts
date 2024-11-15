@@ -24,7 +24,6 @@ class DocumentService extends Service {
     }).then((res) => res.json()) as Promise<
       Pick<DocumentType, "id" | "idxName" | "version">
     >;
-    return null;
   };
   getDocument = (id: string) => {
     return this.http.get<DocumentType>(`/api/documents/${id}`);

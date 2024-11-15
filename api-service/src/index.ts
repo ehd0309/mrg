@@ -19,11 +19,12 @@ const PORT = 4000;
 dotEnv.config();
 
 const app = express();
-app.use(
-  cors({
-    origin: ["*"],
-  })
-);
+// app.use(
+//   cors({
+//     allowedHeaders: ["*"],
+//     origin: ["http://localhost:3000"],
+//   })
+// );
 app.use(bodyParser.json());
 app.use(cookieParser());
 

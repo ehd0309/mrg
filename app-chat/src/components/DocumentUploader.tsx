@@ -12,9 +12,11 @@ import {
   Input,
 } from "@nextui-org/react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const DocumentUploader = () => {
+  const router = useRouter();
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string>("");
@@ -24,10 +26,11 @@ const DocumentUploader = () => {
 
   const handleSubmit = async () => {
     const blob = new Blob([file as BlobPart], { type: "application/pdf" });
-    await createDocument({
+    const res = await createDocument({
       document: blob,
       name: fileName,
       description: fileDescription,
+      version: "v2",
     });
     onClose();
   };

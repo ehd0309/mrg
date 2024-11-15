@@ -1,6 +1,6 @@
 import { SERVICE_BACKEND_URL, LC_BACKEND_URL } from "@/constants";
 import Service from "@/services/Service";
-import { DocumentType, DocumentUploadType } from "@/type/documents";
+import { DocumentType } from "@/type/documents";
 import { RagType } from "@/type/rags";
 
 class RagService extends Service {
@@ -18,6 +18,23 @@ class RagService extends Service {
       },
       body: JSON.stringify({ index_name, file_name }),
     });
+  };
+  createRag = ({
+    name,
+    documents,
+  }: {
+    name: string;
+    documents: DocumentType[];
+  }) => {
+    return this.http.post(
+      `/api/rags`,
+      { name, documents },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    ) as Promise<any>;
   };
 }
 
